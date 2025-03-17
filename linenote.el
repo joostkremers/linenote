@@ -1,4 +1,4 @@
-;;; org-linenote.el --- A package inspired by VSCode Linenote -*- lexical-binding: t; -*-
+;;; linenote.el --- A package inspired by VSCode Linenote -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2024
 ;;
@@ -28,22 +28,22 @@
 
 ;;; Setup:
 
-;; (require 'org-linenote)
+;; (require 'linenote)
 
 ;;; Commentary:
 
 ;; This file provides a source for linenote that manages notes based on the line
 ;; number in a buffer.  The package provides some interactive functions:
 
-;; - org-linenote-move-forward
-;; - org-linenote-move-backward
-;; - org-linenote-add-annotate
-;; - org-linenote-edit-annotate (alias to org-linenote-add-annotate)
-;; - org-linenote-remove-annotate
-;; - org-linenote-browse
-;; - org-linenote-find-root-dir
-;; - org-linenote-find-note-dir
-;; - org-linenote-auto-open
+;; - linenote-move-forward
+;; - linenote-move-backward
+;; - linenote-add-annotate
+;; - linenote-edit-annotate (alias to linenote-add-annotate)
+;; - linenote-remove-annotate
+;; - linenote-browse
+;; - linenote-find-root-dir
+;; - linenote-find-note-dir
+;; - linenote-auto-open
 
 ;; All notes are stored at $PROJECT_ROOT/.linenote directory.
 
@@ -57,64 +57,64 @@
 (require 'eldoc)
 (require 'fringe-helper)
 
-(defcustom org-linenote-default-extension ".org"
+(defcustom linenote-default-extension ".org"
   "Configure the default note extension.
 If you set this to `.md', then it supports compability with
 vscode's linenote."
   :type 'string
-  :group 'org-linenote)
+  :group 'linenote)
 
-(defcustom org-linenote-use-relative t
-  "Use relative path for `org-linenote-browse'.
+(defcustom linenote-use-relative t
+  "Use relative path for `linenote-browse'.
 If the value is t, the note's path will be shown in relative path.
 Otherwise, the absolute path will be used."
   :type 'boolean
-  :group 'org-linenote)
+  :group 'linenote)
 
-(defcustom org-linenote-use-eldoc t
+(defcustom linenote-use-eldoc t
   "Enable Eldoc to display the note.
 When enabled, the note appears before strings from LSP.  Set this to nil
 to disable eldoc."
   :type 'boolean
-  :group 'org-linenote)
+  :group 'linenote)
 
-(defcustom org-linenote-use-highlight t
+(defcustom linenote-use-highlight t
   "Enable highlighting for notes.
 If non-nil, the line with the note will be highlighted.  Set to nil not
 to disable this feature."
   :type 'boolean
-  :group 'org-linenote)
+  :group 'linenote)
 
-(defcustom org-linenote-use-fringe t
+(defcustom linenote-use-fringe t
   "Enable the fringe to display the notes.
 If non-nil, a fringe bitmap indicating notes will appear in the buffer.
 Set to nil to disable the fringe."
   :type 'boolean
-  :group 'org-linenote)
+  :group 'linenote)
 
-(defcustom org-linenote-fringe-side 'left-fringe
+(defcustom linenote-fringe-side 'left-fringe
   "Set the fringe position.
 Either \='left-fringe or \='right-fringe is available."
   :type 'symbol
-  :group 'org-linenote)
+  :group 'linenote)
 
-(defface org-linenote-highlight-style '((t :background "medium turquoise" :underline nil))
+(defface linenote-highlight-style '((t :background "medium turquoise" :underline nil))
   "Highlight style for the notes.")
 
-(defface org-linenote-fringe-face '((t :foreground "#aaaaee" :weight bold))
+(defface linenote-fringe-face '((t :foreground "#aaaaee" :weight bold))
   "Fringe color for the notes.")
 
-(defvar org-linenote--in-browse nil
+(defvar linenote--in-browse nil
   "A flag of browse function.")
 
-(defvar org-linenote--prev-window -1
+(defvar linenote--prev-window -1
   "Temporary value to store previously focused window.")
 
-(defvar org-linenote--buffers nil
+(defvar linenote--buffers nil
   "The target buffer to ensure line tracking.")
 
 (eval-and-compile
-  (defcustom org-linenote-fringe-bitmap
+  (defcustom linenote-fringe-bitmap
     '("XX......"
       "XX......"
       "XX..XX.."
@@ -125,30 +125,30 @@ Either \='left-fringe or \='right-fringe is available."
       "XX......")
     "Define a fringe bitmap to indicate notes."
     :type '(repeat string)
-    :group 'org-linenote))
+    :group 'linenote))
 
-(defvar-local org-linenote--overlays nil
+(defvar-local linenote--overlays nil
   "Overlays in a local buffer.")
 
-(defvar-local org-linenote--fwatch-id nil
-  "File watcher id for org-linenote.")
+(defvar-local linenote--fwatch-id nil
+  "File watcher id for linenote.")
 
-(defvar-local org-linenote--follow-cursor nil
-  "A flag indicating whether the org-linenote feature should follow \
+(defvar-local linenote--follow-cursor nil
+  "A flag indicating whether the linenote feature should follow \
 the cursor.")
 
-(defvar-local org-linenote-mode nil
-  "Org-linenote mode flag.")
+(defvar-local linenote-mode nil
+  "linenote mode flag.")
 
-(defvar-local org-linenote--fringes nil
+(defvar-local linenote--fringes nil
   "A list of fringes.")
 
-(defconst org-linenote--tags-file "tags")
+(defconst linenote--tags-file "tags")
 
-(defvar-local org-linenote--tags-hashmap nil
+(defvar-local linenote--tags-hashmap nil
   "A hash table for tags.")
 
-(defun org-linenote--lines-to-highlight (filename)
+(defun linenote--lines-to-highlight (filename)
   "Get beginning/end line number to highlight from `FILENAME'."
   (let* ((basename filename)
          (matched (string-match "\\`.*#L\\([0-9]+\\)\\(-L\\)?\\([0-9]+\\)?.*\\'" basename)))
@@ -159,10 +159,10 @@ the cursor.")
       (let ((line (string-to-number (match-string 1 basename))))
         `(,line ,(+ 1 line))))))
 
-(defun org-linenote--highlight (filename &optional undo)
+(defun linenote--highlight (filename &optional undo)
   "Highlight the line specified in FILENAME.
 if `UNDO' is t, then unhighlight regions related to `FILENAME'."
-  (let* ((lines (org-linenote--lines-to-highlight filename))
+  (let* ((lines (linenote--lines-to-highlight filename))
          (min-line (- (car lines) 1))
          (max-line (- (car (cdr lines)) 1))
          (diff-line (- max-line min-line)))
@@ -172,67 +172,67 @@ if `UNDO' is t, then unhighlight regions related to `FILENAME'."
     (mapc (lambda (v) (delete-overlay v))
           (overlays-in (line-beginning-position) (line-end-position)))
 
-    (when org-linenote-use-fringe
-      (fringe-helper-define 'org-linenote--fringe-bitmap '(center)
-        (mapconcat #'identity org-linenote-fringe-bitmap "\n"))
+    (when linenote-use-fringe
+      (fringe-helper-define 'linenote--fringe-bitmap '(center)
+        (mapconcat #'identity linenote-fringe-bitmap "\n"))
 
       (if (null undo)
-          (push (fringe-helper-insert 'org-linenote--fringe-bitmap
+          (push (fringe-helper-insert 'linenote--fringe-bitmap
                                       (point)
-                                      org-linenote-fringe-side
-                                      'org-linenote-fringe-face)
-                org-linenote--fringes)))
+                                      linenote-fringe-side
+                                      'linenote-fringe-face)
+                linenote--fringes)))
 
-    (when org-linenote-use-highlight
+    (when linenote-use-highlight
       (beginning-of-line)
       (set-mark (line-beginning-position))
       (forward-line diff-line)
-      (org-linenote--remove-overlays-at (region-beginning))
+      (linenote--remove-overlays-at (region-beginning))
       (if (null undo)
           (let ((ov (make-overlay (region-beginning) (- (region-end) 1))))
-            (overlay-put ov 'face 'org-linenote-highlight-style)
+            (overlay-put ov 'face 'linenote-highlight-style)
             (if (overlay-buffer ov)
-                (push ov org-linenote--overlays))))
+                (push ov linenote--overlays))))
       (forward-line -1)
       (deactivate-mark)
       (goto-char (point-min))
       (forward-line min-line))))
 
-(defun org-linenote-mark-notes ()
+(defun linenote-mark-notes ()
   "Highlight lines with annotated notes."
   (let* ((current-line (line-number-at-pos))
-         (note-relpath (org-linenote--get-relpath))
-         (note-rootdir (org-linenote--get-note-rootdir))
+         (note-relpath (linenote--get-relpath))
+         (note-rootdir (linenote--get-note-rootdir))
          (list-notes (directory-files (expand-file-name (or (file-name-directory note-relpath) "")
                                                         note-rootdir)
                                       nil (file-name-base note-relpath))))
-    (mapc #'org-linenote--highlight list-notes)
+    (mapc #'linenote--highlight list-notes)
     (goto-char (point-min))
     (forward-line (1- current-line))))
 
-(defun org-linenote--get-relpath ()
+(defun linenote--get-relpath ()
   "Get the relative path of the current file."
   (if (projectile-project-root)
       (string-remove-prefix (projectile-project-root) (buffer-file-name))
     (file-name-nondirectory (buffer-file-name))))
 
-(defun org-linenote--validate ()
+(defun linenote--validate ()
   "Validate the current working directory."
 
-  (unless org-linenote-mode
-    (error "Please enable org-linenote mode"))
+  (unless linenote-mode
+    (error "Please enable linenote mode"))
 
   (if-let ((project-root (projectile-project-root)))
-      (let* ((note-dir (org-linenote--get-note-rootdir))
+      (let* ((note-dir (linenote--get-note-rootdir))
              (note-path (expand-file-name
-                         (or (file-name-directory (org-linenote--get-relpath)) "")
+                         (or (file-name-directory (linenote--get-relpath)) "")
                          note-dir)))
         (make-directory note-dir t)
         (make-directory note-path t)
         t)
     (error "The working directory is not a git repo")))
 
-(defun org-linenote--get-note-rootdir ()
+(defun linenote--get-note-rootdir ()
   "Get the root directory of the note based on projectile.
 If not available, then return empty string."
   (if-let ((project-root (projectile-project-root)))
@@ -242,10 +242,10 @@ If not available, then return empty string."
         note-dir)
     ""))
 
-(defalias 'org-linenote-edit-annotate #'org-linenote-add-annotate
-  "This is an alias to `org-linenote-add-annotate'.")
+(defalias 'linenote-edit-annotate #'linenote-add-annotate
+  "This is an alias to `linenote-add-annotate'.")
 
-(defun org-linenote--get-linenum-string ()
+(defun linenote--get-linenum-string ()
   "Get the linenum string for filename."
   (if (use-region-p)
       (format "#L%S-L%S"
@@ -253,7 +253,7 @@ If not available, then return empty string."
               (line-number-at-pos (- (use-region-end) 1)))
     (format "#L%S" (line-number-at-pos))))
 
-(defun org-linenote--get-line-range-by-fname (filename)
+(defun linenote--get-line-range-by-fname (filename)
   "Extracts line range from filename using regex.
 `FILENAME' must be passed by argument."
   (with-temp-buffer
@@ -266,7 +266,7 @@ If not available, then return empty string."
                      nil)))
           (cons min max)))))
 
-(defun org-linenote--get-note-linum-by-direction (line is-forward)
+(defun linenote--get-note-linum-by-direction (line is-forward)
   "Check if there is a note within the `LINE'.
 
 If `IS-FORWARD' is t, then find the next note.  Otherwise, find
@@ -275,8 +275,8 @@ the previous note."
          (cond (is-forward (line-number-at-pos (point-max)))
                (t 0)))
         (found nil))
-    (dolist (file (org-linenote--directory-files))
-      (let* ((range (org-linenote--get-line-range-by-fname file))
+    (dolist (file (linenote--directory-files))
+      (let* ((range (linenote--get-line-range-by-fname file))
              (min (car range))
              (f (if is-forward #'< #'>)))
         (if (and (funcall f line min)
@@ -286,12 +286,12 @@ the previous note."
               (setq res min)))))
     (if found res)))
 
-(defun org-linenote--move-forward (is-forward)
+(defun linenote--move-forward (is-forward)
   "Move to the next note.
 
 If `IS-FORWARD' is nil, then move to the previous note."
   (let* ((current-line (line-number-at-pos))
-         (next-line (org-linenote--get-note-linum-by-direction
+         (next-line (linenote--get-note-linum-by-direction
                      current-line
                      is-forward))
          (f (if is-forward #'> #'<)))
@@ -300,23 +300,23 @@ If `IS-FORWARD' is nil, then move to the previous note."
         (forward-line (- next-line current-line))
       (message "No more notes"))))
 
-(defun org-linenote-move-forward ()
+(defun linenote-move-forward ()
   "Move to the next note."
   (interactive)
-  (org-linenote--validate)
-  (org-linenote--move-forward t))
+  (linenote--validate)
+  (linenote--move-forward t))
 
-(defun org-linenote-move-backward ()
+(defun linenote-move-backward ()
   "Move to the previous note."
   (interactive)
-  (org-linenote--validate)
-  (org-linenote--move-forward nil))
+  (linenote--validate)
+  (linenote--move-forward nil))
 
-(defun org-linenote--check-line-range (line)
+(defun linenote--check-line-range (line)
   "Check if there is a note within the `LINE'."
   (let ((res nil))
-    (dolist (file (org-linenote--directory-files))
-      (let* ((range (org-linenote--get-line-range-by-fname file))
+    (dolist (file (linenote--directory-files))
+      (let* ((range (linenote--get-line-range-by-fname file))
              (min (car range))
              (max (cdr range)))
         (if (and max
@@ -328,28 +328,28 @@ If `IS-FORWARD' is nil, then move to the previous note."
               (setq res file)))))
     res))
 
-(defun org-linenote--check-note-exist ()
+(defun linenote--check-note-exist ()
   "Check whether the note for current line exists.
 If the note exists, return the absolute path, otherwise return nil."
-  (org-linenote--check-line-range (line-number-at-pos)))
+  (linenote--check-line-range (line-number-at-pos)))
 
-(defun org-linenote--get-candidate-note-path ()
+(defun linenote--get-candidate-note-path ()
   "Get the note's absolute path for corresponding line."
-  (or (org-linenote--check-note-exist)
-      (expand-file-name (concat (org-linenote--get-relpath)
-                                (org-linenote--get-linenum-string)
-                                org-linenote-default-extension)
-                        (org-linenote--get-note-rootdir))))
+  (or (linenote--check-note-exist)
+      (expand-file-name (concat (linenote--get-relpath)
+                                (linenote--get-linenum-string)
+                                linenote-default-extension)
+                        (linenote--get-note-rootdir))))
 
-(defun org-linenote-add-annotate (&optional keep-focus)
+(defun linenote-add-annotate (&optional keep-focus)
   "Annotate on the line.
 
 `KEEP-FOCUS': by default, the cursor will be into newly opened
 buffer.  If you set this argument to t, the function will not
 change the focus after the line highlight."
   (interactive)
-  (org-linenote--validate)
-  (let ((note-path (org-linenote--get-candidate-note-path))
+  (linenote--validate)
+  (let ((note-path (linenote--get-candidate-note-path))
         (working-buf (selected-window))
         (current-line (line-number-at-pos)))
     (pop-to-buffer (find-file-noselect note-path) 'reusable-frames)
@@ -357,16 +357,16 @@ change the focus after the line highlight."
     (select-window working-buf)
     (goto-char (point-min))
     (forward-line current-line)
-    (org-linenote-mark-notes)
+    (linenote-mark-notes)
     (forward-line -1)
     (if (not keep-focus)
         (pop-to-buffer (find-file-noselect note-path) 'reusable-frames))))
 
-(defun org-linenote-remove-annotate ()
+(defun linenote-remove-annotate ()
   "Remove the annotation on the line."
   (interactive)
-  (org-linenote--validate)
-  (let ((note-path (org-linenote--get-candidate-note-path)))
+  (linenote--validate)
+  (let ((note-path (linenote--get-candidate-note-path)))
     (if (not (file-exists-p note-path))
         (error "No notes to remove from here")
       (condition-case _
@@ -376,248 +376,248 @@ change the focus after the line highlight."
               (delete-window)
               (when do-remove
                 (delete-file note-path)
-                (org-linenote--highlight (file-name-base note-path) t))))
+                (linenote--highlight (file-name-base note-path) t))))
         (quit (delete-window))))))
 
-(defun org-linenote--directory-files ()
+(defun linenote--directory-files ()
   "Do `directory-files' to find notes (except for files with names ending with ~)."
-  (directory-files (expand-file-name (or (file-name-directory (org-linenote--get-relpath)) "")
-                                     (org-linenote--get-note-rootdir))
-                   'full (concat (file-name-base (org-linenote--get-relpath)) ".[^.].*[^~]$")))
+  (directory-files (expand-file-name (or (file-name-directory (linenote--get-relpath)) "")
+                                     (linenote--get-note-rootdir))
+                   'full (concat (file-name-base (linenote--get-relpath)) ".[^.].*[^~]$")))
 
-(defun org-linenote--get-note-list ()
+(defun linenote--get-note-list ()
   "Get the list of note in the current buffer."
-  (setq org-linenote--in-browse t)
-  (setq org-linenote--prev-window (selected-window))
-  (org-linenote--directory-files))
+  (setq linenote--in-browse t)
+  (setq linenote--prev-window (selected-window))
+  (linenote--directory-files))
 
-(defun org-linenote--post-command-hook ()
+(defun linenote--post-command-hook ()
   "Post-command-hook implementation."
-  (when org-linenote--in-browse
+  (when linenote--in-browse
     (let ((focused-item (nth (symbol-value 'vertico--index) (symbol-value 'vertico--candidates))))
       (when (length> focused-item 0)
-        (select-window org-linenote--prev-window)
-        (org-linenote--highlight focused-item)
+        (select-window linenote--prev-window)
+        (linenote--highlight focused-item)
         (if (active-minibuffer-window)
             (select-window (active-minibuffer-window)))))))
 
-(defun org-linenote--overlayed-by (ov)
+(defun linenote--overlayed-by (ov)
   "Check `OV' instance is actually overlayed by this package."
-  (member ov org-linenote--overlays))
+  (member ov linenote--overlays))
 
-(defun org-linenote--remove-overlays-at (pos)
-  "Remove overlays at `POS' by checking the `org-linenote--overlays'."
+(defun linenote--remove-overlays-at (pos)
+  "Remove overlays at `POS' by checking the `linenote--overlays'."
   (mapc (lambda (ov)
-          (if (org-linenote--overlayed-by ov)
+          (if (linenote--overlayed-by ov)
               (progn
                 (delete-overlay ov)
-                (delete ov org-linenote--overlays)))) (overlays-at pos)))
+                (delete ov linenote--overlays)))) (overlays-at pos)))
 
-(defun org-linenote--minibuf-setup-hook ()
-  "A function added to minibuf-setup-hook used for org-linenote."
-  (add-hook 'post-command-hook #'org-linenote--post-command-hook))
+(defun linenote--minibuf-setup-hook ()
+  "A function added to minibuf-setup-hook used for linenote."
+  (add-hook 'post-command-hook #'linenote--post-command-hook))
 
-(defun org-linenote--minibuf-exit-hook ()
-  "A function added to minibuf-exit-hook used for org-linenote."
-  (setq org-linenote--in-browse nil)
-  (setq org-linenote--prev-window -1)
-  (org-linenote--remove-overlays-at (line-beginning-position))
-  (remove-hook 'post-command-hook #'org-linenote--post-command-hook))
+(defun linenote--minibuf-exit-hook ()
+  "A function added to minibuf-exit-hook used for linenote."
+  (setq linenote--in-browse nil)
+  (setq linenote--prev-window -1)
+  (linenote--remove-overlays-at (line-beginning-position))
+  (remove-hook 'post-command-hook #'linenote--post-command-hook))
 
-(defun org-linenote--is-backup-file (file-path)
+(defun linenote--is-backup-file (file-path)
   "Check the file located at `FILE-PATH is temporary file."
   (string= (substring (file-name-base file-path) 0 2) ".#"))
 
-(defun org-linenote--file-changed (event)
+(defun linenote--file-changed (event)
   "A function to handle file watch `EVENT'."
   (let* ((fs-id (nth 0 event))
          (etype (nth 1 event))
          (fpath (nth 2 event))
-         (buffer-of-event (cdr (assoc fs-id org-linenote--buffers))))
+         (buffer-of-event (cdr (assoc fs-id linenote--buffers))))
 
     (when (and (string-match-p
                 (regexp-quote (file-name-nondirectory
                                (buffer-file-name buffer-of-event)))
                 (file-name-base fpath))
-               (not (org-linenote--is-backup-file fpath)))
+               (not (linenote--is-backup-file fpath)))
       (with-current-buffer buffer-of-event
         (cond
          ((string= etype "deleted")
-          (org-linenote--highlight fpath t))
+          (linenote--highlight fpath t))
          ((string= etype "created")
-          (org-linenote--highlight fpath)))))))
+          (linenote--highlight fpath)))))))
 
-(defun org-linenote--dealloc-fswatch ()
+(defun linenote--dealloc-fswatch ()
   "Remove out the file watchers and corresponding list."
-  (file-notify-rm-watch org-linenote--fwatch-id)
-  (setq-local org-linenote--overlays nil)
-  (setq org-linenote--buffers
-        (delete (assoc org-linenote--fwatch-id org-linenote--buffers) org-linenote--buffers)))
+  (file-notify-rm-watch linenote--fwatch-id)
+  (setq-local linenote--overlays nil)
+  (setq linenote--buffers
+        (delete (assoc linenote--fwatch-id linenote--buffers) linenote--buffers)))
 
-(defun org-linenote--buffer-killed ()
+(defun linenote--buffer-killed ()
   "A hook function for `kill-buffer-hook'."
-  (org-linenote--dealloc-fswatch))
+  (linenote--dealloc-fswatch))
 
-(defun org-linenote--remove-all-overlays ()
+(defun linenote--remove-all-overlays ()
   "Remove all overlays in the current buffer."
-  (mapc #'delete-overlay org-linenote--overlays))
+  (mapc #'delete-overlay linenote--overlays))
 
-(defun org-linenote--remove-all-fringes ()
+(defun linenote--remove-all-fringes ()
   "Remove all fringes in the current buffer."
-  (mapc #'fringe-helper-remove org-linenote--fringes))
+  (mapc #'fringe-helper-remove linenote--fringes))
 
-(defun org-linenote--enable ()
-  "A function to enable `org-linenote-mode'."
-  (org-linenote--validate)
+(defun linenote--enable ()
+  "A function to enable `linenote-mode'."
+  (linenote--validate)
 
-  (add-hook 'minibuffer-setup-hook #'org-linenote--minibuf-setup-hook)
-  (add-hook 'minibuffer-exit-hook #'org-linenote--minibuf-exit-hook)
-  (add-hook 'kill-buffer-hook #'org-linenote--buffer-killed :local)
-  (add-hook 'before-revert-hook #'org-linenote--remove-all-overlays :local)
-  (add-hook 'before-revert-hook #'org-linenote--remove-all-fringes :local)
+  (add-hook 'minibuffer-setup-hook #'linenote--minibuf-setup-hook)
+  (add-hook 'minibuffer-exit-hook #'linenote--minibuf-exit-hook)
+  (add-hook 'kill-buffer-hook #'linenote--buffer-killed :local)
+  (add-hook 'before-revert-hook #'linenote--remove-all-overlays :local)
+  (add-hook 'before-revert-hook #'linenote--remove-all-fringes :local)
 
-  (let* ((watch-directory (expand-file-name (or (file-name-directory (org-linenote--get-relpath)) "")
-                                            (org-linenote--get-note-rootdir)))
+  (let* ((watch-directory (expand-file-name (or (file-name-directory (linenote--get-relpath)) "")
+                                            (linenote--get-note-rootdir)))
          (buffer-id (current-buffer))
          (watch-id (file-notify-add-watch watch-directory
                                           '(change)
-                                          #'org-linenote--file-changed)))
-    (setq-local org-linenote--fwatch-id watch-id)
-    (setq-local org-linenote--follow-cursor nil)
-    (push `(,watch-id . ,buffer-id) org-linenote--buffers))
+                                          #'linenote--file-changed)))
+    (setq-local linenote--fwatch-id watch-id)
+    (setq-local linenote--follow-cursor nil)
+    (push `(,watch-id . ,buffer-id) linenote--buffers))
 
-  (org-linenote-mark-notes)
-  (when org-linenote-use-eldoc
+  (linenote-mark-notes)
+  (when linenote-use-eldoc
     (setq-local eldoc-documentation-functions
-                (cons 'org-linenote--eldoc-show-buffer eldoc-documentation-functions))))
+                (cons 'linenote--eldoc-show-buffer eldoc-documentation-functions))))
 
-(defun org-linenote--disable ()
-  "A function to disable `org-linenote-mode'."
+(defun linenote--disable ()
+  "A function to disable `linenote-mode'."
   (setq-local eldoc-documentation-functions
-              (delete 'org-linenote--eldoc-show-buffer eldoc-documentation-functions))
+              (delete 'linenote--eldoc-show-buffer eldoc-documentation-functions))
 
-  (remove-hook 'minibuffer-setup-hook #'org-linenote--minibuf-setup-hook)
-  (remove-hook 'minibuffer-exit-hook #'org-linenote--minibuf-exit-hook)
-  (remove-hook 'kill-buffer-hook #'org-linenote--buffer-killed :local)
-  (remove-hook 'before-revert-hook #'org-linenote--remove-all-overlays :local)
+  (remove-hook 'minibuffer-setup-hook #'linenote--minibuf-setup-hook)
+  (remove-hook 'minibuffer-exit-hook #'linenote--minibuf-exit-hook)
+  (remove-hook 'kill-buffer-hook #'linenote--buffer-killed :local)
+  (remove-hook 'before-revert-hook #'linenote--remove-all-overlays :local)
 
-  (org-linenote--remove-all-overlays)
-  (org-linenote--remove-all-fringes)
-  (org-linenote--auto-open-at-cursor 'false)
-  (org-linenote--dealloc-fswatch))
+  (linenote--remove-all-overlays)
+  (linenote--remove-all-fringes)
+  (linenote--auto-open-at-cursor 'false)
+  (linenote--dealloc-fswatch))
 
-(define-minor-mode org-linenote-mode
-  "Toggle `org-linenote-mode'."
+(define-minor-mode linenote-mode
+  "Toggle `linenote-mode'."
   :init-value nil
   :global nil
-  :lighter " Org-Linenote"
+  :lighter " Linenote"
 
   (unless (projectile-project-root)
     (error "The working directory is not a git repo"))
 
-  (if org-linenote-mode (org-linenote--enable) (org-linenote--disable)))
+  (if linenote-mode (linenote--enable) (linenote--disable)))
 
-(defun org-linenote-browse ()
+(defun linenote-browse ()
   "Browse notes for this buffer."
   (interactive)
-  (org-linenote--validate)
+  (linenote--validate)
   (condition-case _
-      (funcall #'org-linenote--browse)
+      (funcall #'linenote--browse)
     (quit
-     (org-linenote--minibuf-exit-hook)
-     (org-linenote-mark-notes))))
+     (linenote--minibuf-exit-hook)
+     (linenote-mark-notes))))
 
-(defun org-linenote-find-root-dir ()
+(defun linenote-find-root-dir ()
   "Open the linenote root directory for the current project."
   (interactive)
-  (org-linenote--validate)
-  (let ((note-dir (org-linenote--get-note-rootdir)))
+  (linenote--validate)
+  (let ((note-dir (linenote--get-note-rootdir)))
     (if (file-exists-p note-dir)
         (find-file note-dir)
       (error "No notes found"))))
 
-(defun org-linenote-find-note-dir ()
+(defun linenote-find-note-dir ()
   "Open the note directory for the current file."
   (interactive)
-  (org-linenote--validate)
-  (let ((note-dir (expand-file-name (or (file-name-directory (org-linenote--get-relpath)) "")
-                                    (org-linenote--get-note-rootdir))))
+  (linenote--validate)
+  (let ((note-dir (expand-file-name (or (file-name-directory (linenote--get-relpath)) "")
+                                    (linenote--get-note-rootdir))))
     (if (file-exists-p note-dir)
         (find-file note-dir)
       (error "No notes found"))))
 
-(defun org-linenote--follow-func ()
+(defun linenote--follow-func ()
   "A hook function for `note-follow' feature."
-  (if (org-linenote--check-note-exist)
-      (org-linenote-edit-annotate t)))
+  (if (linenote--check-note-exist)
+      (linenote-edit-annotate t)))
 
-(defun org-linenote--auto-open-at-cursor (&optional toggle)
-  "Toggle org-linenote follow mode.
+(defun linenote--auto-open-at-cursor (&optional toggle)
+  "Toggle linenote follow mode.
 
 This let you open the note automatically.  if `TOGGLE' is \=false,
 disable note-follow.  if `TOGGLE' is \=true, enable note-follow."
   (let ((set-to (cond ((eq toggle 'true) t)
                       ((eq toggle 'false) nil)
-                      ((null toggle) (not org-linenote--follow-cursor)))))
-    (setq-local org-linenote--follow-cursor set-to)
-    (if org-linenote--follow-cursor
-        (add-hook 'post-command-hook #'org-linenote--follow-func nil t)
-      (remove-hook 'post-command-hook #'org-linenote--follow-func t))))
+                      ((null toggle) (not linenote--follow-cursor)))))
+    (setq-local linenote--follow-cursor set-to)
+    (if linenote--follow-cursor
+        (add-hook 'post-command-hook #'linenote--follow-func nil t)
+      (remove-hook 'post-command-hook #'linenote--follow-func t))))
 
-(defun org-linenote-auto-open ()
-  "Toggle org-linenote follow mode."
+(defun linenote-auto-open ()
+  "Toggle linenote follow mode."
   (interactive)
-  (org-linenote--auto-open-at-cursor)
-  (message "org-linenote note-follow %s"
-           (if org-linenote--follow-cursor "enabled" "disabled")))
+  (linenote--auto-open-at-cursor)
+  (message "linenote note-follow %s"
+           (if linenote--follow-cursor "enabled" "disabled")))
 
-(defun org-linenote--obtain-tag-string-by-key (key)
+(defun linenote--obtain-tag-string-by-key (key)
   "Get a tag string by the `KEY' from the hash table."
   (let ((result ""))
     (mapc (lambda (v)
             (setq result (concat result (format "#%s " v))))
-          (gethash (format "#L%S" (car key)) org-linenote--tags-hashmap))
+          (gethash (format "#L%S" (car key)) linenote--tags-hashmap))
     result))
 
-(defun org-linenote--add-tags-to-notelist (notes)
+(defun linenote--add-tags-to-notelist (notes)
   "Add tags to the list of `NOTES' for the current buffer."
   (mapcar (lambda (note)
-            (when org-linenote-use-relative
+            (when linenote-use-relative
               (setq note (string-replace (expand-file-name ".linenote/"
                                                            (projectile-project-root)) "" note)))
             (format "%-100s%s" note
-                    (org-linenote--obtain-tag-string-by-key
-                     (org-linenote--get-line-range-by-fname note)))) notes))
+                    (linenote--obtain-tag-string-by-key
+                     (linenote--get-line-range-by-fname note)))) notes))
 
-(defun org-linenote--truncate-tags-or-spaces-from-string (str)
+(defun linenote--truncate-tags-or-spaces-from-string (str)
   "A function to truncate tags or spaces from `STR'."
   (car (string-split str " ")))
 
-(defun org-linenote--browse ()
+(defun linenote--browse ()
   "Browse notes in the current buffer.
 Argument CHOICE user's selection."
-  (let* ((reldir (expand-file-name (concat (file-name-directory (org-linenote--get-relpath)) "")
-                                   (org-linenote--get-note-rootdir))))
-    (org-linenote--load-tags reldir)
-    (when (null org-linenote--tags-hashmap)
-      (setq-local org-linenote--tags-hashmap (make-hash-table :test 'equal)))
+  (let* ((reldir (expand-file-name (concat (file-name-directory (linenote--get-relpath)) "")
+                                   (linenote--get-note-rootdir))))
+    (linenote--load-tags reldir)
+    (when (null linenote--tags-hashmap)
+      (setq-local linenote--tags-hashmap (make-hash-table :test 'equal)))
 
-    (let ((choice (org-linenote--truncate-tags-or-spaces-from-string
+    (let ((choice (linenote--truncate-tags-or-spaces-from-string
                    (completing-read "Choose the note: "
-                                    (org-linenote--add-tags-to-notelist (org-linenote--get-note-list)) nil t))))
-      (org-linenote-mark-notes)
-      (when org-linenote-use-relative
+                                    (linenote--add-tags-to-notelist (linenote--get-note-list)) nil t))))
+      (linenote-mark-notes)
+      (when linenote-use-relative
         (setq choice (expand-file-name choice
                                        (expand-file-name ".linenote/" (projectile-project-root)))))
 
       (pop-to-buffer (find-file-noselect choice 'reusable-frames)))))
 
-(defun org-linenote--eldoc-show-buffer (&optional args)
+(defun linenote--eldoc-show-buffer (&optional args)
   "Show the first line of a candidate note in the mini-buffer.
 Optional argument `ARGS' Return the string for eldoc.  Since we need
 only note buffer, there is no usage of `ARGS' at all."
   (ignore args)
-  (let ((note-path (org-linenote--get-candidate-note-path)))
+  (let ((note-path (linenote--get-candidate-note-path)))
     (when (and note-path (file-exists-p note-path))
       (with-temp-buffer
         (insert-file-contents note-path)
@@ -629,64 +629,64 @@ only note buffer, there is no usage of `ARGS' at all."
               (lsp--render-string file-buffer (cdr (assoc file-ext language)))
             (error (message "handle error: %s" e))))))))
 
-(defun org-linenote--load-tags (directory)
+(defun linenote--load-tags (directory)
   "Load tags saved in the note `DIRECTORY'."
-  (setq-local org-linenote--tags-hashmap
+  (setq-local linenote--tags-hashmap
               (let ((tag-file
-                     (expand-file-name org-linenote--tags-file directory)))
+                     (expand-file-name linenote--tags-file directory)))
                 (when (file-exists-p tag-file)
                   ;; load the file
                   (with-temp-buffer
                     (insert-file-contents tag-file)
                     (read (current-buffer)))))))
 
-(defun org-linenote--save-tags (directory)
+(defun linenote--save-tags (directory)
   "Save tags to the note `DIRECTORY'."
-  (let ((tag-file (expand-file-name org-linenote--tags-file directory))
-        (hash-str (prin1-to-string org-linenote--tags-hashmap)))
+  (let ((tag-file (expand-file-name linenote--tags-file directory))
+        (hash-str (prin1-to-string linenote--tags-hashmap)))
     (with-temp-file tag-file
       (insert hash-str))))
 
-(defun org-linenote-add-tags ()
+(defun linenote-add-tags ()
   "Add tags corresponding to the current line."
   (interactive)
 
-  (if (null (org-linenote--check-note-exist))
+  (if (null (linenote--check-note-exist))
       (message "Note does not exist on the current line.")
     (let ((reldir (expand-file-name
-                   (concat (file-name-directory (org-linenote--get-relpath)) "")
-                   (org-linenote--get-note-rootdir))))
-      (org-linenote--load-tags reldir)
-      (when (null org-linenote--tags-hashmap)
-        (setq-local org-linenote--tags-hashmap (make-hash-table :test 'equal)))
+                   (concat (file-name-directory (linenote--get-relpath)) "")
+                   (linenote--get-note-rootdir))))
+      (linenote--load-tags reldir)
+      (when (null linenote--tags-hashmap)
+        (setq-local linenote--tags-hashmap (make-hash-table :test 'equal)))
 
-      (let* ((tagkey (org-linenote--get-linenum-string))
-             (prev-val (gethash tagkey org-linenote--tags-hashmap))
+      (let* ((tagkey (linenote--get-linenum-string))
+             (prev-val (gethash tagkey linenote--tags-hashmap))
              (tagstr (completing-read-multiple "Input tags (separated by , ): " prev-val)))
-        (remhash tagkey org-linenote--tags-hashmap)
+        (remhash tagkey linenote--tags-hashmap)
         (if prev-val
-            (puthash tagkey (append tagstr prev-val) org-linenote--tags-hashmap)
-          (puthash tagkey tagstr org-linenote--tags-hashmap))
-        (org-linenote--save-tags reldir)))))
+            (puthash tagkey (append tagstr prev-val) linenote--tags-hashmap)
+          (puthash tagkey tagstr linenote--tags-hashmap))
+        (linenote--save-tags reldir)))))
 
-(defun org-linenote-remove-tags ()
+(defun linenote-remove-tags ()
   "Remove tags corresponding to the current line."
   (interactive)
 
-  (let ((reldir (expand-file-name (concat (file-name-directory (org-linenote--get-relpath)) "")
-                                  (org-linenote--get-note-rootdir))))
+  (let ((reldir (expand-file-name (concat (file-name-directory (linenote--get-relpath)) "")
+                                  (linenote--get-note-rootdir))))
 
-    (org-linenote--load-tags reldir)
-    (let* ((tagkey (org-linenote--get-linenum-string))
-           (prev-val (gethash tagkey org-linenote--tags-hashmap)))
+    (linenote--load-tags reldir)
+    (let* ((tagkey (linenote--get-linenum-string))
+           (prev-val (gethash tagkey linenote--tags-hashmap)))
 
       (if (null prev-val)
           (message "No tags to remove on the current line.")
         (let* ((tagstr (completing-read-multiple "Input tags to remove (separated by , ): " prev-val)))
           (mapc (lambda (v) (setq prev-val (delete v prev-val))) tagstr)
-          (remhash tagkey org-linenote--tags-hashmap)
-          (puthash tagkey prev-val org-linenote--tags-hashmap)
-          (org-linenote--save-tags reldir))))))
+          (remhash tagkey linenote--tags-hashmap)
+          (puthash tagkey prev-val linenote--tags-hashmap)
+          (linenote--save-tags reldir))))))
 
-(provide 'org-linenote)
-;;; org-linenote.el ends here
+(provide 'linenote)
+;;; linenote.el ends here

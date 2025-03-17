@@ -1,10 +1,10 @@
-* org-linenote
+* linenote
 
-An Emacs note package inspired by Visual Studio Code's Linenote (https://marketplace.visualstudio.com/items?itemName=tkrkt.linenote).
+An Emacs note package inspired by [[https://marketplace.visualstudio.com/items?itemName=tkrkt.linenote][Visual Studio Code's Linenote]], forked from [[https://github.com/seokbeomKim/org-linenote][seokbeomKim/org-linenote]].
 
 ** What is this package?
 
-=org-linenote= has several key features:
+=linenote= has several key features:
 
 - Creating a note per line
 - Saving notes by preserving the directory structure
@@ -12,18 +12,18 @@ An Emacs note package inspired by Visual Studio Code's Linenote (https://marketp
 - No org properties required
 - Based on a Git repository
 
-=org-linenote= is useful when you need a detailed note on a specific line of code or document, unlike other note-taking packages that create a note per file. Additionally, the package does not require Org properties but only utilizes the line number from the filename.
+=linenote= is useful when you need a detailed note on a specific line of code or document, unlike other note-taking packages that create a note per file. Additionally, the package does not require Org properties but only utilizes the line number from the filename.
 
 Also, the package provides compatibility with the VS Code Linenote extension. If you manage the notes within the markdown (.md) format, the same notes can also be utilized in Visual Studio Code.
 
-These features make =org-linenote= useful when you need 'line-by-line' notes to analyze the code and share notes with others. I use this package for analyzing Linux kernel and sharing insights with people (most of them are vscode users).
+These features make =linenote= useful when you need 'line-by-line' notes to analyze the code and share notes with others. I use this package for analyzing Linux kernel and sharing insights with people (most of them are vscode users).
 
 * Installation
 
-The package is available on MELPA(https://melpa.org)!
+The package can only be installed manually.
 
 #+BEGIN_SRC elisp
-(require 'org-linenote)
+(require 'linenote)
 #+END_SRC
 
 * Usage
@@ -37,37 +37,37 @@ The package is available on MELPA(https://melpa.org)!
 
 The package provides interactive functions as follows:
 
-- ~org-linenote-mode~: to enable Linenote's highlight on the current buffer.
-- ~org-linenote-browse~: to browse notes for the current buffer.
-- ~org-linenote-add-annotate~: to add a note for the current line.
-- ~org-linenote-edit-annotate~: an alias for ~org-linenote-add-annotate~. Edit the note corresponding to the current line.
-- ~org-linenote-remove-annotate~: to remove the note corresponding to the current line.
-- ~org-linenote-add-tags~: to add tags for the current line.
-- ~org-linenote-remove-tags~: to remove tags for the current line.
-- ~org-linenote-move-forward~: to move to the next note from the current line.
-- ~org-linenote-move-backward~: to move to the previous note from the current line.
-- ~org-linenote-find-root-dir~: to find the root directory of the project.
-- ~org-linenote-find-note-dir~: to find the note directory of the current buffer.
-- ~org-linenote-auto-open~: to enable the note-following feature to view notes of the currently focused line.
+- ~linenote-mode~: to enable Linenote's highlight on the current buffer.
+- ~linenote-browse~: to browse notes for the current buffer.
+- ~linenote-add-annotate~: to add a note for the current line.
+- ~linenote-edit-annotate~: an alias for ~linenote-add-annotate~. Edit the note corresponding to the current line.
+- ~linenote-remove-annotate~: to remove the note corresponding to the current line.
+- ~linenote-add-tags~: to add tags for the current line.
+- ~linenote-remove-tags~: to remove tags for the current line.
+- ~linenote-move-forward~: to move to the next note from the current line.
+- ~linenote-move-backward~: to move to the previous note from the current line.
+- ~linenote-find-root-dir~: to find the root directory of the project.
+- ~linenote-find-note-dir~: to find the note directory of the current buffer.
+- ~linenote-auto-open~: to enable the note-following feature to view notes of the currently focused line.
 
 ** M-x customize
 
 The following variables are customizable via ~M-x customize~.
 
-- ~org-linenote-use-eldoc~: to enable or disable eldoc support.
-- ~org-linenote-use-relative~: use relative paths in ~org-linenote-browse~.
-- ~org-linenote-use-highlight~: to enable or disable line highlighting.
-- ~org-linenote-use-fringe~: to enable or disable fringe support.
+- ~linenote-use-eldoc~: to enable or disable eldoc support.
+- ~linenote-use-relative~: use relative paths in ~linenote-browse~.
+- ~linenote-use-highlight~: to enable or disable line highlighting.
+- ~linenote-use-fringe~: to enable or disable fringe support.
 
 *** Fringe
 
-- ~org-linenote-fringe-side~: to choose between ~'left-fringe~ or ~'right-fringe~.
-- ~org-linenote-fringe-face~: to configure the face (i.e. color) of the fringes.
-- ~org-linenote-fringe-bitmap~: to set the fringe bitmap style.
+- ~linenote-fringe-side~: to choose between ~'left-fringe~ or ~'right-fringe~.
+- ~linenote-fringe-face~: to configure the face (i.e. color) of the fringes.
+- ~linenote-fringe-bitmap~: to set the fringe bitmap style.
 
 *** Highlight
 
-- ~org-linenote-highlight-style~: to customize the style of highlighting.
+- ~linenote-highlight-style~: to customize the style of highlighting.
 
 ** Single-line and multi-line notes
 
@@ -78,22 +78,22 @@ For example, when we add a note on ~init/main.c:131~, then it creates the note i
 ** Tagging Support
 Unlike VS Code's extension, the package supports tags. The tags can be used when browsing notes.
 
-- ~org-linenote-add-tags~
-- ~org-linenote-remove-tags~
+- ~linenote-add-tags~
+- ~linenote-remove-tags~
 
-** Integrating org-linenote and VS Code's Linenote
+** Integrating linenote and VS Code's Linenote
 
-=org-linenote= utilizes the directory ~$PROJECT/.linenote~, but VS Code Linenote uses ~$PROJECT/.vscode/linenote~.
+=linenote= utilizes the directory ~$PROJECT/.linenote~, but VS Code Linenote uses ~$PROJECT/.vscode/linenote~.
 
-Notes must be in markdown format to be displayed correctly in VS Code. =org-linenote= can deal with both org and markdown format. But, VS Code Linenote can only deal with markdown format. So, I recommend using the markdown format for compatibility with vscode-linenote if you use vscode as well.
+Notes must be in markdown format to be displayed correctly in VS Code. =linenote= can deal with both org and markdown format. But, VS Code Linenote can only deal with markdown format. So, I recommend using the markdown format for compatibility with vscode-linenote if you use vscode as well.
 
-If you want to create notes with a different extension, you can set ~org-linenote--default-extension~ to other values. This only affects the extension of new notes to create and does not filter existing notes.
+If you want to create notes with a different extension, you can set ~linenote--default-extension~ to other values. This only affects the extension of new notes to create and does not filter existing notes.
 
 #+begin_src emacs-lisp
-(setq org-linenote--default-extension ".md")
+(setq linenote--default-extension ".md")
 #+end_src
 
-Create a symbolic link (org-linenote directory to VS Code Linenote directory)
+Create a symbolic link (linenote directory to VS Code Linenote directory)
 
 #+BEGIN_SRC bash
 $ ln -sv $PROJECT/.linenote $PROJECT/.vscode/linenote
