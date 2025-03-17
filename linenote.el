@@ -9,7 +9,7 @@
 ;; Version: 1.1.3
 ;; Keywords: tools, note, org
 ;; Homepage: https://github.com/seokbeomKim/org-linenote
-;; Package-Requires: ((emacs "29.1") (projectile "2.8.0") (vertico "1.7") (eldoc "1.11") (fringe-helper "1.0.1"))
+;; Package-Requires: ((emacs "29.1") (vertico "1.7") (eldoc "1.11") (fringe-helper "1.0.1"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -49,7 +49,6 @@
 
 ;;; Code:
 
-(require 'projectile)
 (require 'vertico)
 (require 'subr-x)
 (require 'filenotify)
@@ -144,6 +143,16 @@ the cursor.")
 (defvar-local linenote--tags-hashmap nil
   "A hash table for tags.")
 
+(defun linenote--project-root ()
+  "Return the current project's root.
+If called outside of a project, return nil.
+
+This function uses `projectile' if available, otherwise `project.el'."
+  (if (fboundp 'projectile-project-root)
+      (projectile-project-root)
+    (if-let ((project (project-current)))
+        (expand-file-name (project-root project)))))
+
 (defun linenote--lines-to-highlight (filename)
   "Get beginning/end line number to highlight from `FILENAME'."
   (let* ((basename filename)
@@ -208,13 +217,13 @@ if `UNDO' is t, then unhighlight regions related to `FILENAME'."
 
 (defun linenote--get-relpath ()
   "Get the relative path of the current file."
-  (if (projectile-project-root)
-      (string-remove-prefix (projectile-project-root) (buffer-file-name))
+  (if (linenote--project-root)
+      (string-remove-prefix (linenote--project-root) (buffer-file-name))
     (file-name-nondirectory (buffer-file-name))))
 
 (defun linenote--validate ()
   "Validate the current working directory."
-  (if-let ((project-root (projectile-project-root)))
+  (if-let ((project-root (linenote--project-root)))
       (let* ((note-dir (linenote--get-note-rootdir))
              (note-path (expand-file-name
                          (or (file-name-directory (linenote--get-relpath)) "")
@@ -227,7 +236,7 @@ if `UNDO' is t, then unhighlight regions related to `FILENAME'."
 (defun linenote--get-note-rootdir ()
   "Get the root directory of the note based on projectile.
 If not available, then return empty string."
-  (if-let ((project-root (projectile-project-root)))
+  (if-let ((project-root (linenote--project-root)))
       (let ((note-dir (expand-file-name ".linenote" project-root)))
         (unless (file-exists-p note-dir)
           (make-directory note-dir t))
@@ -504,7 +513,7 @@ change the focus after the line highlight."
   :global nil
   :lighter " Linenote"
 
-  (unless (projectile-project-root)
+  (unless (linenote--project-root)
     (error "The working directory is not a git repo"))
 
   (if linenote-mode (linenote--enable) (linenote--disable)))
@@ -576,7 +585,7 @@ disable note-follow.  if `TOGGLE' is \=true, enable note-follow."
   (mapcar (lambda (note)
             (when linenote-use-relative
               (setq note (string-replace (expand-file-name ".linenote/"
-                                                           (projectile-project-root)) "" note)))
+                                                           (linenote--project-root)) "" note)))
             (format "%-100s%s" note
                     (linenote--obtain-tag-string-by-key
                      (linenote--get-line-range-by-fname note)))) notes))
@@ -600,7 +609,7 @@ Argument CHOICE user's selection."
       (linenote-mark-notes)
       (when linenote-use-relative
         (setq choice (expand-file-name choice
-                                       (expand-file-name ".linenote/" (projectile-project-root)))))
+                                       (expand-file-name ".linenote/" (linenote--project-root)))))
 
       (pop-to-buffer (find-file-noselect choice 'reusable-frames)))))
 
