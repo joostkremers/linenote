@@ -9,7 +9,7 @@
 ;; Version: 1.1.3
 ;; Keywords: tools, note, org
 ;; Homepage: https://github.com/seokbeomKim/org-linenote
-;; Package-Requires: ((emacs "29.1") (projectile "2.8.0") (vertico "1.7") (eldoc "1.11") (lsp-mode "9.0.0") (fringe-helper "1.0.1"))
+;; Package-Requires: ((emacs "29.1") (projectile "2.8.0") (vertico "1.7") (eldoc "1.11") (fringe-helper "1.0.1"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -53,7 +53,6 @@
 (require 'vertico)
 (require 'subr-x)
 (require 'filenotify)
-(require 'lsp-mode)
 (require 'eldoc)
 (require 'fringe-helper)
 
@@ -626,7 +625,11 @@ only note buffer, there is no usage of `ARGS' at all."
                (language '(("org" . "org")
                            ("md" . "markdown"))))
           (condition-case e
-              (lsp--render-string file-buffer (cdr (assoc file-ext language)))
+              (if (fboundp 'lsp--render-string)
+                  (lsp--render-string file-buffer (cdr (assoc file-ext language)))
+                ;; TODO We should come up with a more portable way to
+                ;; render the buffer.
+                file-buffer)
             (error (message "handle error: %s" e))))))))
 
 (defun linenote--load-tags (directory)
