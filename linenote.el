@@ -136,9 +136,6 @@ Either \='left-fringe or \='right-fringe is available."
   "A flag indicating whether the linenote feature should follow \
 the cursor.")
 
-(defvar-local linenote-mode nil
-  "linenote mode flag.")
-
 (defvar-local linenote--fringes nil
   "A list of fringes.")
 
@@ -217,10 +214,6 @@ if `UNDO' is t, then unhighlight regions related to `FILENAME'."
 
 (defun linenote--validate ()
   "Validate the current working directory."
-
-  (unless linenote-mode
-    (error "Please enable linenote mode"))
-
   (if-let ((project-root (projectile-project-root)))
       (let* ((note-dir (linenote--get-note-rootdir))
              (note-path (expand-file-name
