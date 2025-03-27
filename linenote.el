@@ -49,11 +49,11 @@
 
 ;;; Code:
 
-(require 'vertico)
 (require 'subr-x)
 (require 'filenotify)
 (require 'eldoc)
 (require 'project)
+(require 'vertico)
 (require 'fringe-helper)
 
 (defcustom linenote-default-extension ".org"
