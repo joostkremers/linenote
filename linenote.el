@@ -109,14 +109,14 @@ The value should be either `left-fringe' or `right-fringe'."
 
 (eval-and-compile
   (defcustom linenote-fringe-bitmap
-    '("XX......"
-      "XX......"
-      "XX..XX.."
-      "XX..XX.."
-      "XX..XX.."
-      "XX..XX.."
-      "XX......"
-      "XX......")
+    '("........"
+      "...XX..."
+      "..XXXX.."
+      ".XXXXXX."
+      ".XXXXXX."
+      "..XXXX.."
+      "...XX..."
+      "........")
     "Define a fringe bitmap to indicate notes."
     :type '(repeat string)
     :group 'linenote))
