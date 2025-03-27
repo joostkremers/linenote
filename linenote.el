@@ -72,7 +72,7 @@ If non-nil, the note's path is shown as a relative path."
   :type 'boolean
   :group 'linenote)
 
-(defcustom linenote-use-highlight t
+(defcustom linenote-use-highlight nil
   "Enable highlighting for notes.
 If non-nil, highlight lines with an associated note."
   :type 'boolean
