@@ -92,7 +92,7 @@ The value should be either `left-fringe' or `right-fringe'."
                  (const :tag "Right fringe" right-fringe))
   :group 'linenote)
 
-(defface linenote-highlight-style '((t :background "medium turquoise" :underline nil))
+(defface linenote-highlight-face '((t (:inherit highlight)))
   "Highlight style for the notes.")
 
 (defface linenote-fringe-face '((t :foreground "#aaaaee" :weight bold))
@@ -191,7 +191,7 @@ if `UNDO' is t, then unhighlight regions related to `FILENAME'."
       (linenote--remove-overlays-at (region-beginning))
       (if (null undo)
           (let ((ov (make-overlay (region-beginning) (- (region-end) 1))))
-            (overlay-put ov 'face 'linenote-highlight-style)
+            (overlay-put ov 'face 'linenote-highlight-face)
             (if (overlay-buffer ov)
                 (push ov linenote--overlays))))
       (forward-line -1)
