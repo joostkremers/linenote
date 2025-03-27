@@ -1,9 +1,10 @@
 ;;; linenote.el --- A package inspired by VSCode Linenote -*- lexical-binding: t; -*-
 ;;
-;; Copyright (C) 2024
+;; Copyright (C) 2024 Jason Kim
+;; Copyright (C) 2025 Joost Kremers
 ;;
 ;; Author: Jason Kim <sukbeom.kim@gmail.com>
-;; Maintainer: Jason Kim <sukbeom.kim@gmail.com>
+;; Maintainer: Joost Kremers <joostkremers@fastmail.com>
 ;; Created: February 18, 2024
 ;; Modified: Dec 31, 2024
 ;; Version: 1.1.3
