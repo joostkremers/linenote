@@ -413,7 +413,8 @@ change the focus after the line highlight."
           (if (linenote--overlayed-by ov)
               (progn
                 (delete-overlay ov)
-                (delete ov linenote--overlays)))) (overlays-at pos)))
+                (delete ov linenote--overlays))))
+        (overlays-at pos)))
 
 (defun linenote--minibuf-setup-hook ()
   "A function added to minibuf-setup-hook used for linenote."
@@ -586,10 +587,12 @@ disable note-follow.  if `TOGGLE' is \=true, enable note-follow."
   (mapcar (lambda (note)
             (when linenote-use-relative
               (setq note (string-replace (expand-file-name ".linenote/"
-                                                           (linenote--project-root)) "" note)))
+                                                           (linenote--project-root))
+                                         "" note)))
             (format "%-100s%s" note
                     (linenote--obtain-tag-string-by-key
-                     (linenote--get-line-range-by-fname note)))) notes))
+                     (linenote--get-line-range-by-fname note))))
+          notes))
 
 (defun linenote--truncate-tags-or-spaces-from-string (str)
   "A function to truncate tags or spaces from `STR'."
