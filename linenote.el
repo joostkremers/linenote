@@ -53,6 +53,7 @@
 (require 'subr-x)
 (require 'filenotify)
 (require 'eldoc)
+(require 'project)
 (require 'fringe-helper)
 
 (defcustom linenote-default-extension ".org"
