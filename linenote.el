@@ -87,6 +87,8 @@ If non-nil, a note indicator appears in the fringe."
 (defcustom linenote-fringe-side 'left-fringe
   "Set the fringe position.
 The value should be either `left-fringe' or `right-fringe'."
+  :type '(choice (const :tag "Left fringe" left-fringe)
+                 (const :tag "Right fringe" right-fringe))
   :group 'linenote)
 
 (defface linenote-highlight-style '((t :background "medium turquoise" :underline nil))
