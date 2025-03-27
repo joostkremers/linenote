@@ -87,10 +87,10 @@ Unlike VS Code's extension, the package supports tags. The tags can be used when
 
 Notes must be in markdown format to be displayed correctly in VS Code. =linenote= can deal with both org and markdown format. But, VS Code Linenote can only deal with markdown format. So, I recommend using the markdown format for compatibility with vscode-linenote if you use vscode as well.
 
-If you want to create notes with a different extension, you can set ~linenote--default-extension~ to other values. This only affects the extension of new notes to create and does not filter existing notes.
+If you want to create notes with a different extension, you can set ~linenote-default-extension~ to other values. This only affects the extension of new notes to create and does not filter existing notes.
 
 #+begin_src emacs-lisp
-(setq linenote--default-extension ".md")
+(setq linenote-default-extension ".md")
 #+end_src
 
 Create a symbolic link (linenote directory to VS Code Linenote directory)
