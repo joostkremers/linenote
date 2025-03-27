@@ -95,7 +95,7 @@ The value should be either `left-fringe' or `right-fringe'."
 (defface linenote-highlight-face '((t (:inherit highlight)))
   "Highlight style for the notes.")
 
-(defface linenote-fringe-face '((t :foreground "#aaaaee" :weight bold))
+(defface linenote-fringe-face '((t (:inherit error)))
   "Fringe color for the notes.")
 
 (defvar linenote--in-browse nil
