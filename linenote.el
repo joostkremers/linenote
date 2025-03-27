@@ -56,45 +56,37 @@
 (require 'vertico)
 (require 'fringe-helper)
 
-(defcustom linenote-default-extension ".org"
-  "Configure the default note extension.
-If you set this to `.md', then it supports compability with
-vscode's linenote."
+(defcustom linenote-default-extension ".md"
+  "The default note extension."
   :type 'string
   :group 'linenote)
 
 (defcustom linenote-use-relative t
-  "Use relative path for `linenote-browse'.
-If the value is t, the note's path will be shown in relative path.
-Otherwise, the absolute path will be used."
+  "Use relative paths for `linenote-browse'.
+If non-nil, the note's path is shown as a relative path."
   :type 'boolean
   :group 'linenote)
 
 (defcustom linenote-use-eldoc t
-  "Enable Eldoc to display the note.
-When enabled, the note appears before strings from LSP.  Set this to nil
-to disable eldoc."
+  "Enable Eldoc support to display the note."
   :type 'boolean
   :group 'linenote)
 
 (defcustom linenote-use-highlight t
   "Enable highlighting for notes.
-If non-nil, the line with the note will be highlighted.  Set to nil not
-to disable this feature."
+If non-nil, highlight lines with an associated note."
   :type 'boolean
   :group 'linenote)
 
 (defcustom linenote-use-fringe t
-  "Enable the fringe to display the notes.
-If non-nil, a fringe bitmap indicating notes will appear in the buffer.
-Set to nil to disable the fringe."
+  "Use the fringe to mark lines with a note.
+If non-nil, a note indicator appears in the fringe."
   :type 'boolean
   :group 'linenote)
 
 (defcustom linenote-fringe-side 'left-fringe
   "Set the fringe position.
-Either \='left-fringe or \='right-fringe is available."
-  :type 'symbol
+The value should be either `left-fringe' or `right-fringe'."
   :group 'linenote)
 
 (defface linenote-highlight-style '((t :background "medium turquoise" :underline nil))
