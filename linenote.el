@@ -141,13 +141,9 @@ the cursor.")
 
 (defun linenote--project-root ()
   "Return the current project's root.
-If called outside of a project, return nil.
-
-This function uses `projectile' if available, otherwise `project.el'."
-  (if (fboundp 'projectile-project-root)
-      (projectile-project-root)
-    (if-let ((project (project-current)))
-        (expand-file-name (project-root project)))))
+If called outside of a project, return nil."
+  (if-let ((project (project-current)))
+      (expand-file-name (project-root project))))
 
 (defun linenote--lines-to-highlight (filename)
   "Get beginning/end line number to highlight from `FILENAME'."
