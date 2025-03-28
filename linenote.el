@@ -92,10 +92,10 @@ The value should be either `left-fringe' or `right-fringe'."
                  (const :tag "Right fringe" right-fringe))
   :group 'linenote)
 
-(defface linenote-highlight-face '((t (:inherit highlight)))
+(defface linenote-highlight-face '((t (:underline (:color "#1e90ff" :position 'descent))))
   "Highlight style for the notes.")
 
-(defface linenote-fringe-face '((t (:inherit error)))
+(defface linenote-fringe-face '((t (:foreground "#1e90ff")))
   "Fringe color for the notes.")
 
 (defvar linenote--in-browse nil
