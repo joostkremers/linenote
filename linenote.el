@@ -226,8 +226,9 @@ if `UNDO' is t, then unhighlight regions related to `FILENAME'."
     (error "The working directory is not a git repo")))
 
 (defun linenote--get-note-rootdir ()
-  "Get the root directory of the note based on projectile.
-If not available, then return empty string."
+  "Get the root directory of the note.
+If not in a project, return empty string.  This function uses
+`project.el' under the hood."
   (if-let ((project-root (linenote--project-root)))
       (let ((note-dir (expand-file-name ".linenote" project-root)))
         (unless (file-exists-p note-dir)
