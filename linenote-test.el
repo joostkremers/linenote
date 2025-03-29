@@ -1,4 +1,4 @@
-;; linenote-test.el --- Tests for linenote.el
+;; linenote-test.el --- Tests for linenote.el -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2024
 ;;
