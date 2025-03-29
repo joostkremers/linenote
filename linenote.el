@@ -38,9 +38,8 @@
 
 ;; - linenote-move-forward
 ;; - linenote-move-backward
-;; - linenote-add-annotate
-;; - linenote-edit-annotate (alias to linenote-add-annotate)
-;; - linenote-remove-annotate
+;; - linenote-annotate
+;; - linenote-remove-note
 ;; - linenote-browse
 ;; - linenote-find-root-dir
 ;; - linenote-find-note-dir
@@ -236,9 +235,6 @@ If not in a project, return empty string.  This function uses
         note-dir)
     ""))
 
-(defalias 'linenote-edit-annotate #'linenote-add-annotate
-  "This is an alias to `linenote-add-annotate'.")
-
 (defun linenote--get-linenum-string ()
   "Get the linenum string for filename."
   (if (use-region-p)
@@ -335,12 +331,9 @@ If the note exists, return the absolute path, otherwise return nil."
                                 linenote-default-extension)
                         (linenote--get-note-rootdir))))
 
-(defun linenote-add-annotate (&optional keep-focus)
-  "Annotate on the line.
-
-`KEEP-FOCUS': by default, the cursor will be into newly opened
-buffer.  If you set this argument to t, the function will not
-change the focus after the line highlight."
+(defun linenote-annotate (&optional keep-focus)
+  "Open a note for the current line, creating one if none exists.
+Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
   (interactive)
   (linenote--validate)
   (let ((note-path (linenote--get-candidate-note-path))
@@ -356,7 +349,7 @@ change the focus after the line highlight."
     (if (not keep-focus)
         (pop-to-buffer (find-file-noselect note-path) 'reusable-frames))))
 
-(defun linenote-remove-annotate ()
+(defun linenote-remove-note ()
   "Remove the annotation on the line."
   (interactive)
   (linenote--validate)
@@ -544,7 +537,7 @@ change the focus after the line highlight."
 (defun linenote--follow-func ()
   "A hook function for `note-follow' feature."
   (if (linenote--check-note-exist)
-      (linenote-edit-annotate t)))
+      (linenote-annotate t)))
 
 (defun linenote--auto-open-at-cursor (&optional toggle)
   "Toggle linenote follow mode.
