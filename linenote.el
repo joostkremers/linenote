@@ -62,19 +62,16 @@
   :group 'linenote)
 
 (defcustom linenote-use-relative t
-  "Use relative paths for `linenote-browse'.
-If non-nil, the note's path is shown as a relative path."
+  "If non-nil, show relative paths in `linenote-browse'."
   :type 'boolean
   :group 'linenote)
 
 (defcustom linenote-use-eldoc t
-  "Enable Eldoc support to display the note."
+  "If non-nil, use Eldoc to display the note."
   :type 'boolean
   :group 'linenote)
 
 (defcustom linenote-use-highlight nil
-  "Enable highlighting for notes.
-If non-nil, highlight lines with an associated note."
   :type 'boolean
   :group 'linenote)
 
@@ -127,8 +124,7 @@ The value should be either `left-fringe' or `right-fringe'."
   "File watcher id for linenote.")
 
 (defvar-local linenote--follow-cursor nil
-  "A flag indicating whether the linenote feature should follow \
-the cursor.")
+  "A flag indicating whether the linenote feature should follow the cursor.")
 
 (defvar-local linenote--fringes nil
   "A list of fringes.")
@@ -244,8 +240,7 @@ If not in a project, return empty string.  This function uses
     (format "#L%S" (line-number-at-pos))))
 
 (defun linenote--get-line-range-by-fname (filename)
-  "Extracts line range from filename using regex.
-`FILENAME' must be passed by argument."
+  "Extracts line range from FILENAME."
   (with-temp-buffer
     (insert filename)
     (goto-char (point-min))
