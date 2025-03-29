@@ -10,7 +10,7 @@
 ;; Version: 1.1.3
 ;; Keywords: tools, note, org
 ;; Homepage: https://github.com/seokbeomKim/org-linenote
-;; Package-Requires: ((emacs "29.1") (vertico "1.7") (eldoc "1.11") (fringe-helper "1.0.1"))
+;; Package-Requires: ((emacs "29.1") (vertico "1.7") (eldoc "1.11"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -54,7 +54,6 @@
 (require 'eldoc)
 (require 'project)
 (require 'vertico)
-(require 'fringe-helper)
 
 (defcustom linenote-default-extension ".md"
   "The default note extension."
@@ -72,20 +71,17 @@
   :group 'linenote)
 
 (defcustom linenote-use-highlight nil
+  "If non-nil, highlight lines with an associated note."
   :type 'boolean
   :group 'linenote)
 
-(defcustom linenote-use-fringe t
-  "Use the fringe to mark lines with a note.
-If non-nil, a note indicator appears in the fringe."
-  :type 'boolean
-  :group 'linenote)
-
-(defcustom linenote-fringe-side 'left-fringe
-  "Set the fringe position.
-The value should be either `left-fringe' or `right-fringe'."
+(defcustom linenote-use-fringe 'left-fringe
+  "If non-nil, use the fringe to mark lines with a note.
+The value should be `left-fringe' or `right-fringe'.  To disable the
+fringe marker, set this variable to nil."
   :type '(choice (const :tag "Left fringe" left-fringe)
-                 (const :tag "Right fringe" right-fringe))
+                 (const :tag "Right fringe" right-fringe)
+                 (const :tag "No fringe markers" nil))
   :group 'linenote)
 
 (defface linenote-highlight-face '((t (:underline (:color "#1e90ff" :position 'descent))))
@@ -103,19 +99,35 @@ The value should be either `left-fringe' or `right-fringe'."
 (defvar linenote--buffers nil
   "The target buffer to ensure line tracking.")
 
-(eval-and-compile
-  (defcustom linenote-fringe-bitmap
-    '("........"
-      "...XX..."
-      "..XXXX.."
-      ".XXXXXX."
-      ".XXXXXX."
-      "..XXXX.."
-      "...XX..."
-      "........")
-    "Define a fringe bitmap to indicate notes."
-    :type '(repeat string)
-    :group 'linenote))
+(defun linenote-set-fringe-bitmap (var value)
+  "Setter function for `linenote-fringe-bitmap'.
+VAR is the variable `linenote-fringe-bitmap', VALUE should be a list of
+strings representing binary numbers.  If any string in VALUE contains
+characters other than 0 or 1, an error is raised."
+  (mapc (lambda (s)
+          (unless (string-match-p "\\`[01]+\\'" s)
+            (error "Not a binary number: %S" s)))
+        value)
+  (custom-set-default var value)
+  (define-fringe-bitmap 'linenote--fringe-bitmap
+    (apply #'vector (mapcar (lambda (s)
+                              (string-to-number s 2))
+                            value))
+    nil nil 'center))
+
+(defcustom linenote-fringe-bitmap
+  '("00000000"
+    "00011000"
+    "00111100"
+    "01111110"
+    "01111110"
+    "00111100"
+    "00011000"
+    "00000000")
+  "Define a fringe bitmap to indicate notes."
+  :type '(repeat (string :tag ""))
+  :group 'linenote
+  :set #'linenote-set-fringe-bitmap)
 
 (defvar-local linenote--overlays nil
   "Overlays in a local buffer.")
@@ -126,8 +138,8 @@ The value should be either `left-fringe' or `right-fringe'."
 (defvar-local linenote--follow-cursor nil
   "A flag indicating whether the linenote feature should follow the cursor.")
 
-(defvar-local linenote--fringes nil
-  "A list of fringes.")
+(defvar-local linenote--fringe-markers nil
+  "A list of fringe markers.")
 
 (defconst linenote--tags-file "tags")
 
@@ -153,28 +165,23 @@ If called outside of a project, return nil."
 
 (defun linenote--highlight (filename &optional undo)
   "Highlight the line specified in FILENAME.
-if `UNDO' is t, then unhighlight regions related to `FILENAME'."
+if UNDO is non-nil, then unhighlight regions related to FILENAME."
   (let* ((lines (linenote--lines-to-highlight filename))
          (min-line (- (car lines) 1))
          (max-line (- (car (cdr lines)) 1))
          (diff-line (- max-line min-line)))
     (goto-char (point-min))
     (forward-line min-line)
-
     (mapc (lambda (v) (delete-overlay v))
           (overlays-in (line-beginning-position) (line-end-position)))
-
     (when linenote-use-fringe
-      (fringe-helper-define 'linenote--fringe-bitmap '(center)
-        (mapconcat #'identity linenote-fringe-bitmap "\n"))
-
       (if (null undo)
-          (push (fringe-helper-insert 'linenote--fringe-bitmap
-                                      (point)
-                                      linenote-fringe-side
-                                      'linenote-fringe-face)
-                linenote--fringes)))
-
+          (let ((ov (make-overlay (point) (point))))
+            (overlay-put ov 'before-string
+                         (propertize "N" 'display (list linenote-use-fringe
+                                                        'linenote--fringe-bitmap
+                                                        'linenote-fringe-face)))
+            (push ov linenote--fringe-markers))))
     (when linenote-use-highlight
       (beginning-of-line)
       (set-mark (line-beginning-position))
@@ -447,7 +454,7 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
 
 (defun linenote--remove-all-fringes ()
   "Remove all fringes in the current buffer."
-  (mapc #'fringe-helper-remove linenote--fringes))
+  (mapc #'delete-overlay linenote--fringe-markers))
 
 (defun linenote--enable ()
   "A function to enable `linenote-mode'."
