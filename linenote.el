@@ -215,7 +215,7 @@ if UNDO is non-nil, then unhighlight regions related to FILENAME."
 
 (defun linenote--validate ()
   "Validate the current working directory."
-  (if-let ((project-root (linenote--project-root)))
+  (if (linenote--project-root)
       (let* ((note-dir (linenote--get-note-rootdir))
              (note-path (expand-file-name
                          (or (file-name-directory (linenote--get-relpath)) "")
