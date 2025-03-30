@@ -199,15 +199,13 @@ if UNDO is non-nil, then unhighlight regions related to FILENAME."
 
 (defun linenote-mark-notes ()
   "Highlight lines with annotated notes."
-  (let* ((current-line (line-number-at-pos))
-         (note-relpath (linenote--get-relpath))
-         (note-rootdir (linenote--get-note-rootdir))
+  (let* ((note-relpath (linenote--get-relpath))
          (list-notes (directory-files (expand-file-name (or (file-name-directory note-relpath) "")
-                                                        note-rootdir)
+                                                        (linenote--get-note-rootdir))
                                       nil (file-name-base note-relpath))))
     (mapc #'linenote--highlight list-notes)
     (goto-char (point-min))
-    (forward-line (1- current-line))))
+    (forward-line (1- (line-number-at-pos)))))
 
 (defun linenote--get-relpath ()
   "Get the relative path of the current file."
