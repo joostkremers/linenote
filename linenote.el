@@ -434,6 +434,15 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
   "Remove all fringes in the current buffer."
   (mapc #'delete-overlay linenote--fringe-markers))
 
+(define-minor-mode linenote-mode
+  "Toggle `linenote-mode'."
+  :init-value nil
+  :global nil
+  :lighter " Linenote"
+  (if linenote-mode
+      (linenote--enable)
+    (linenote--disable)))
+
 (defun linenote--enable ()
   "Enable `linenote-mode' in the current buffer."
   ;; First check if we're in a project and visiting a file.
@@ -490,17 +499,6 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
   (linenote--remove-all-fringes)
   (linenote--auto-open-at-cursor 'false)
   (linenote--dealloc-fswatch))
-
-(define-minor-mode linenote-mode
-  "Toggle `linenote-mode'."
-  :init-value nil
-  :global nil
-  :lighter " Linenote"
-
-  (unless (linenote--project-root)
-    (error "The working directory is not a git repo"))
-
-  (if linenote-mode (linenote--enable) (linenote--disable)))
 
 (defun linenote-browse ()
   "Browse notes for this buffer."
