@@ -434,6 +434,10 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
   "Remove all fringes in the current buffer."
   (mapc #'delete-overlay linenote--fringe-markers))
 
+;; To silence the byte-compiler when we assign this variable directly
+;; below.
+(defvar linenote-mode)
+
 (define-minor-mode linenote-mode
   "Toggle `linenote-mode'."
   :init-value nil
