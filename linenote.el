@@ -235,7 +235,10 @@ and \"m\" the last line."
     (format "#L%S" (line-number-at-pos))))
 
 (defun linenote--get-line-range-by-fname (filename)
-  "Extracts line range from FILENAME."
+  "Extract line range from FILENAME.
+Return value is a cons cell of two numbers, the first and last line of
+the note.  If the note only refers to a single line, the second value is
+nil."
   (when (string-match ".*#L\\([0-9]+\\)\\(?:-L\\([0-9]+\\).*\\)?" filename)
     (let ((min (string-to-number (match-string 1 filename)))
           (max (if (match-beginning 2)
