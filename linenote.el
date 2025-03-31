@@ -435,29 +435,46 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
   (mapc #'delete-overlay linenote--fringe-markers))
 
 (defun linenote--enable ()
-  "A function to enable `linenote-mode'."
-  (linenote--validate)
+  "Enable `linenote-mode' in the current buffer."
+  ;; First check if we're in a project and visiting a file.
+  (when (not (linenote--project-root))
+    (setq linenote-mode nil)
+    (error "The working directory is not a known project"))
+  (when (not (buffer-file-name))
+    (setq linenote-mode nil)
+    (error "Not file-visiting buffer"))
 
-  (add-hook 'minibuffer-setup-hook #'linenote--minibuf-setup-hook)
-  (add-hook 'minibuffer-exit-hook #'linenote--minibuf-exit-hook)
-  (add-hook 'kill-buffer-hook #'linenote--buffer-killed :local)
-  (add-hook 'before-revert-hook #'linenote--remove-all-overlays :local)
-  (add-hook 'before-revert-hook #'linenote--remove-all-fringes :local)
+  ;; Make sure the note directory exists.
+  (let ((note-dir (expand-file-name
+                   (or (file-name-directory (linenote--get-relpath)) "")
+                   (linenote--get-note-rootdir))))
+    (make-directory note-dir t)
 
-  (let* ((watch-directory (expand-file-name (or (file-name-directory (linenote--get-relpath)) "")
-                                            (linenote--get-note-rootdir)))
-         (buffer-id (current-buffer))
-         (watch-id (file-notify-add-watch watch-directory
-                                          '(change)
-                                          #'linenote--file-changed)))
-    (setq-local linenote--fwatch-id watch-id)
-    (setq-local linenote--follow-cursor nil)
-    (push `(,watch-id . ,buffer-id) linenote--buffers))
+    ;; Set up some hooks.
+    (add-hook 'minibuffer-setup-hook #'linenote--minibuf-setup-hook)
+    (add-hook 'minibuffer-exit-hook #'linenote--minibuf-exit-hook)
+    (add-hook 'kill-buffer-hook #'linenote--buffer-killed :local)
+    (add-hook 'before-revert-hook #'linenote--remove-all-overlays :local)
+    (add-hook 'before-revert-hook #'linenote--remove-all-fringes :local)
 
-  (linenote-mark-notes)
-  (when linenote-use-eldoc
-    (setq-local eldoc-documentation-functions
-                (cons 'linenote--eldoc-show-buffer eldoc-documentation-functions))))
+    ;; Set up a file watcher for the note directory.
+    (let* ((buffer-id (current-buffer))
+           ;; TODO `file-notify-add-watch' triggers an error if the file
+           ;; cannot be watched. We should probably handle this.
+           (watch-id (file-notify-add-watch note-dir
+                                            '(change)
+                                            #'linenote--file-changed)))
+      (setq-local linenote--fwatch-id watch-id)
+      (setq-local linenote--follow-cursor nil)
+      (push `(,watch-id . ,buffer-id) linenote--buffers))
+
+    ;; Mark all existing notes.
+    (linenote-mark-notes)
+
+    ;; Set up Eldoc.
+    (when linenote-use-eldoc
+      (setq-local eldoc-documentation-functions
+                  (cons 'linenote--eldoc-show-buffer eldoc-documentation-functions)))))
 
 (defun linenote--disable ()
   "A function to disable `linenote-mode'."
