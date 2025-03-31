@@ -372,14 +372,10 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
         (if (active-minibuffer-window)
             (select-window (active-minibuffer-window)))))))
 
-(defun linenote--overlayed-by (ov)
-  "Check `OV' instance is actually overlayed by this package."
-  (member ov linenote--overlays))
-
 (defun linenote--remove-overlays-at (pos)
-  "Remove overlays at `POS' by checking the `linenote--overlays'."
+  "Remove overlays at POS by checking the `linenote--overlays'."
   (mapc (lambda (ov)
-          (if (linenote--overlayed-by ov)
+          (if (member ov linenote--overlays)
               (progn
                 (delete-overlay ov)
                 (delete ov linenote--overlays))))
