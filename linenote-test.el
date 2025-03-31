@@ -32,7 +32,7 @@
   :expected-result :failed
 
   (with-temp-buffer
-    (should (equal (linenote--get-linenum-string) "#L1")))
+    (should (equal (linenote--create-linenum-string) "#L1")))
 
   ;; following test case is not working properly. Maybe there is a limit in
   ;; batch mode.?
@@ -41,7 +41,7 @@
     (insert "2nd line\n")
     (insert "3rd line")
     (set-mark (point-min))
-    (should (equal (linenote--get-linenum-string) "#L1-L3"))))
+    (should (equal (linenote--create-linenum-string) "#L1-L3"))))
 
 (ert-deftest linenote-test-get-line-range-by-fname ()
   "Test getting the line range of a file."

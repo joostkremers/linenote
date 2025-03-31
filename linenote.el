@@ -222,8 +222,12 @@ If not in a project, return empty string.  This function uses
         note-dir)
     ""))
 
-(defun linenote--get-linenum-string ()
-  "Get the linenum string for filename."
+(defun linenote--create-linenum-string ()
+  "Create a line number string for the line at point.
+Return value is a string of the form \"#L<n>\", with \"n\" being the
+line number.  If the region is active, return a line range instead, of
+the form \"#L<n>-L<m>\", with \"n\" being the first line of the region
+and \"m\" the last line."
   (if (use-region-p)
       (format "#L%S-L%S"
               (line-number-at-pos (use-region-beginning))
@@ -308,7 +312,7 @@ If the note exists, return the absolute path, otherwise return nil."
   "Get the note's absolute path for corresponding line."
   (or (linenote--check-note-exist)
       (expand-file-name (concat (linenote--get-relpath)
-                                (linenote--get-linenum-string)
+                                (linenote--create-linenum-string)
                                 linenote-default-extension)
                         (linenote--get-note-rootdir))))
 
@@ -645,7 +649,7 @@ only note buffer, there is no usage of `ARGS' at all."
       (when (null linenote--tags-hashmap)
         (setq-local linenote--tags-hashmap (make-hash-table :test 'equal)))
 
-      (let* ((tagkey (linenote--get-linenum-string))
+      (let* ((tagkey (linenote--create-linenum-string))
              (prev-val (gethash tagkey linenote--tags-hashmap))
              (tagstr (completing-read-multiple "Input tags (separated by , ): " prev-val)))
         (remhash tagkey linenote--tags-hashmap)
@@ -662,7 +666,7 @@ only note buffer, there is no usage of `ARGS' at all."
                                   (linenote--get-note-rootdir))))
 
     (linenote--load-tags reldir)
-    (let* ((tagkey (linenote--get-linenum-string))
+    (let* ((tagkey (linenote--create-linenum-string))
            (prev-val (gethash tagkey linenote--tags-hashmap)))
 
       (if (null prev-val)
