@@ -232,15 +232,12 @@ If not in a project, return empty string.  This function uses
 
 (defun linenote--get-line-range-by-fname (filename)
   "Extracts line range from FILENAME."
-  (with-temp-buffer
-    (insert filename)
-    (goto-char (point-min))
-    (if (re-search-forward ".*#L\\([0-9]+\\)\\(-L\\([0-9]+\\)\\)?\\(.*\\)?" nil t)
-        (let ((min (string-to-number (match-string 1)))
-              (max (if (match-beginning 3)
-                       (string-to-number (match-string 3))
-                     nil)))
-          (cons min max)))))
+  (when (string-match ".*#L\\([0-9]+\\)\\(?:-L\\([0-9]+\\).*\\)?" filename)
+    (let ((min (string-to-number (match-string 1 filename)))
+          (max (if (match-beginning 2)
+                   (string-to-number (match-string 2 filename))
+                 nil)))
+      (cons min max))))
 
 (defun linenote--get-note-linum-by-direction (line is-forward)
   "Check if there is a note within the `LINE'.
