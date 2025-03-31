@@ -390,9 +390,9 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
   (linenote--remove-overlays-at (line-beginning-position))
   (remove-hook 'post-command-hook #'linenote--post-command-hook))
 
-(defun linenote--is-backup-file (file-path)
-  "Check if the file located at FILE-PATH is temporary file."
-  (string= (substring (file-name-base file-path) 0 2) ".#"))
+(defun linenote--is-lock-file (file)
+  "Check if FILE is lock file."
+  (string= (substring (file-name-base file) 0 2) ".#"))
 
 (defun linenote--file-changed (event)
   "A function to handle file watch EVENT."
@@ -405,7 +405,7 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
                 (regexp-quote (file-name-nondirectory
                                (buffer-file-name buffer-of-event)))
                 (file-name-base fpath))
-               (not (linenote--is-backup-file fpath)))
+               (not (linenote--is-lock-file fpath)))
       (with-current-buffer buffer-of-event
         (cond
          ((string= etype "deleted")
