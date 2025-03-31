@@ -203,9 +203,7 @@ if UNDO is non-nil, then unhighlight regions related to FILENAME."
          (notes-list (directory-files (expand-file-name (or (file-name-directory note-relpath) "")
                                                         (linenote--get-note-rootdir))
                                       nil (file-name-base note-relpath))))
-    (mapc #'linenote--highlight notes-list)
-    (goto-char (point-min))
-    (forward-line (1- (line-number-at-pos)))))
+    (mapc #'linenote--highlight notes-list)))
 
 (defun linenote--get-relpath ()
   "Get the relative path of the current file."
