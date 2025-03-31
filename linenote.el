@@ -393,11 +393,11 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
   (remove-hook 'post-command-hook #'linenote--post-command-hook))
 
 (defun linenote--is-backup-file (file-path)
-  "Check the file located at `FILE-PATH is temporary file."
+  "Check if the file located at FILE-PATH is temporary file."
   (string= (substring (file-name-base file-path) 0 2) ".#"))
 
 (defun linenote--file-changed (event)
-  "A function to handle file watch `EVENT'."
+  "A function to handle file watch EVENT."
   (let* ((fs-id (nth 0 event))
          (etype (nth 1 event))
          (fpath (nth 2 event))
