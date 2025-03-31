@@ -213,18 +213,6 @@ if UNDO is non-nil, then unhighlight regions related to FILENAME."
       (string-remove-prefix (linenote--project-root) (buffer-file-name))
     (file-name-nondirectory (buffer-file-name))))
 
-(defun linenote--validate ()
-  "Validate the current working directory."
-  (if (linenote--project-root)
-      (let* ((note-dir (linenote--get-note-rootdir))
-             (note-path (expand-file-name
-                         (or (file-name-directory (linenote--get-relpath)) "")
-                         note-dir)))
-        (make-directory note-dir t)
-        (make-directory note-path t)
-        t)
-    (error "The working directory is not a git repo")))
-
 (defun linenote--get-note-rootdir ()
   "Get the root directory of the note.
 If not in a project, return empty string.  This function uses
@@ -293,13 +281,11 @@ If `IS-FORWARD' is nil, then move to the previous note."
 (defun linenote-move-forward ()
   "Move to the next note."
   (interactive)
-  (linenote--validate)
   (linenote--move-forward t))
 
 (defun linenote-move-backward ()
   "Move to the previous note."
   (interactive)
-  (linenote--validate)
   (linenote--move-forward nil))
 
 (defun linenote--check-line-range (line)
@@ -335,7 +321,6 @@ If the note exists, return the absolute path, otherwise return nil."
   "Open a note for the current line, creating one if none exists.
 Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
   (interactive)
-  (linenote--validate)
   (let ((note-path (linenote--get-candidate-note-path))
         (working-buf (selected-window))
         (current-line (line-number-at-pos)))
@@ -352,7 +337,6 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
 (defun linenote-remove-note ()
   "Remove the annotation on the line."
   (interactive)
-  (linenote--validate)
   (let ((note-path (linenote--get-candidate-note-path)))
     (if (not (file-exists-p note-path))
         (error "No notes to remove from here")
@@ -508,7 +492,6 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
 (defun linenote-browse ()
   "Browse notes for this buffer."
   (interactive)
-  (linenote--validate)
   (condition-case _
       (funcall #'linenote--browse)
     (quit
@@ -518,7 +501,6 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
 (defun linenote-find-root-dir ()
   "Open the linenote root directory for the current project."
   (interactive)
-  (linenote--validate)
   (let ((note-dir (linenote--get-note-rootdir)))
     (if (file-exists-p note-dir)
         (find-file note-dir)
@@ -527,7 +509,6 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
 (defun linenote-find-note-dir ()
   "Open the note directory for the current file."
   (interactive)
-  (linenote--validate)
   (let ((note-dir (expand-file-name (or (file-name-directory (linenote--get-relpath)) "")
                                     (linenote--get-note-rootdir))))
     (if (file-exists-p note-dir)
