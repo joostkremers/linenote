@@ -490,7 +490,7 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
                   (cons 'linenote--eldoc-show-buffer eldoc-documentation-functions)))))
 
 (defun linenote--disable ()
-  "A function to disable `linenote-mode'."
+  "Disable `linenote-mode' in the current buffer."
   (setq-local eldoc-documentation-functions
               (delete 'linenote--eldoc-show-buffer eldoc-documentation-functions))
 
