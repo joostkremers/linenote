@@ -401,14 +401,14 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
   (let* ((fs-id (nth 0 event))
          (etype (nth 1 event))
          (fpath (nth 2 event))
-         (buffer-of-event (cdr (assoc fs-id linenote--buffers))))
+         (event-buffer (cdr (assoc fs-id linenote--buffers))))
 
     (when (and (string-match-p
                 (regexp-quote (file-name-nondirectory
-                               (buffer-file-name buffer-of-event)))
+                               (buffer-file-name event-buffer)))
                 (file-name-base fpath))
                (not (linenote--is-lock-file fpath)))
-      (with-current-buffer buffer-of-event
+      (with-current-buffer event-buffer
         (cond
          ((string= etype "deleted")
           (linenote--highlight fpath t))
