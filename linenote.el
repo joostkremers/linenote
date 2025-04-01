@@ -10,7 +10,7 @@
 ;; Version: 1.1.3
 ;; Keywords: tools, note, org
 ;; Homepage: https://github.com/seokbeomKim/org-linenote
-;; Package-Requires: ((emacs "29.1") (vertico "1.7") (eldoc "1.11"))
+;; Package-Requires: ((emacs "29.1") (eldoc "1.11"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -42,7 +42,6 @@
 ;; - linenote-remove-note
 ;; - linenote-find-root-dir
 ;; - linenote-find-note-dir
-;; - linenote-auto-open
 
 ;; All notes are stored at $PROJECT_ROOT/.linenote directory.
 
@@ -52,7 +51,6 @@
 (require 'filenotify)
 (require 'eldoc)
 (require 'project)
-(require 'vertico)
 
 (defcustom linenote-default-extension ".md"
   "The default note extension."
@@ -130,9 +128,6 @@ characters other than 0 or 1, an error is raised."
 
 (defvar-local linenote--fwatch-id nil
   "File watcher id for linenote.")
-
-(defvar-local linenote--follow-cursor nil
-  "A flag indicating whether the linenote feature should follow the cursor.")
 
 (defvar-local linenote--fringe-markers nil
   "A list of fringe markers.")
@@ -466,7 +461,6 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
 
   (linenote--remove-all-overlays)
   (linenote--remove-all-fringes)
-  (linenote--auto-open-at-cursor 'false)
   (linenote--dealloc-fswatch))
 
 (defun linenote-find-root-dir ()
@@ -485,30 +479,6 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
     (if (file-exists-p note-dir)
         (find-file note-dir)
       (error "No notes found"))))
-
-(defun linenote--follow-func ()
-  "A hook function for `note-follow' feature."
-  (if (linenote--check-note-exist)
-      (linenote-annotate t)))
-
-(defun linenote--auto-open-at-cursor (&optional toggle)
-  "Toggle linenote follow mode.
-This let you open the note automatically.  if TOGGLE is nil, disable
-note-follow.  If TOGGLE is non-nil, enable note-follow."
-  (let ((set-to (cond ((eq toggle 'true) t)
-                      ((eq toggle 'false) nil)
-                      ((null toggle) (not linenote--follow-cursor)))))
-    (setq-local linenote--follow-cursor set-to)
-    (if linenote--follow-cursor
-        (add-hook 'post-command-hook #'linenote--follow-func nil t)
-      (remove-hook 'post-command-hook #'linenote--follow-func t))))
-
-(defun linenote-auto-open ()
-  "Toggle linenote follow mode."
-  (interactive)
-  (linenote--auto-open-at-cursor)
-  (message "linenote note-follow %s"
-           (if linenote--follow-cursor "enabled" "disabled")))
 
 (defun linenote--obtain-tag-string-by-key (key)
   "Get a tag string by the KEY from the hash table."
