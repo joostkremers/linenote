@@ -154,47 +154,52 @@ If called outside of a project, return nil."
       (let ((line (string-to-number (match-string 1 basename))))
         `(,line ,(+ 1 line))))))
 
-(defun linenote--highlight (filename &optional undo)
-  "Highlight the line specified in FILENAME.
-if UNDO is non-nil, then unhighlight regions related to FILENAME."
-  (let* ((lines (linenote--lines-to-highlight filename))
-         (min-line (- (car lines) 1))
-         (max-line (- (car (cdr lines)) 1))
-         (diff-line (- max-line min-line)))
-    (goto-char (point-min))
-    (forward-line min-line)
-    (mapc (lambda (v) (delete-overlay v))
-          (overlays-in (line-beginning-position) (line-end-position)))
-    (when linenote-use-fringe
-      (if (null undo)
+(defun linenote--mark-note (filename &optional remove)
+  "Mark the line specified in FILENAME.
+If REMOVE is non-nil, remove markers for the relevant lines.
+
+Marking involves setting the fringe marker and/or highlighting the
+relevant lines, depending on the user settings `linenote-use-fringe' and
+`linenote-use-highlight'."
+  (save-mark-and-excursion
+    (let* ((lines (linenote--lines-to-highlight filename))
+           (min-line (1- (car lines)))
+           (max-line (1- (car (cdr lines))))
+           (diff-line (- max-line min-line)))
+      (goto-char (point-min))
+      (forward-line min-line)
+      ;; TODO We should remove all overlays in one go, not in two steps
+      ;; (the fringe marker here, the highlight below). We *should*,
+      ;; however, make sure we only delete our own overlays, which is not
+      ;; happening here right now.
+      (mapc (lambda (v) (delete-overlay v))
+            (overlays-in (line-beginning-position) (line-end-position)))
+      (when linenote-use-fringe
+        (unless remove
           (let ((ov (make-overlay (point) (point))))
             (overlay-put ov 'before-string
                          (propertize "N" 'display (list linenote-use-fringe
                                                         'linenote--fringe-bitmap
                                                         'linenote-fringe-face)))
             (push ov linenote--fringe-markers))))
-    (when linenote-use-highlight
-      (beginning-of-line)
-      (set-mark (line-beginning-position))
-      (forward-line diff-line)
-      (linenote--remove-overlays-at (region-beginning))
-      (if (null undo)
-          (let ((ov (make-overlay (region-beginning) (- (region-end) 1))))
+      (when linenote-use-highlight
+        (beginning-of-line)
+        (set-mark (line-beginning-position))
+        (forward-line diff-line)
+        (linenote--remove-overlays-at (region-beginning))
+        (unless remove
+          (let ((ov (make-overlay (region-beginning) (1- (region-end)))))
             (overlay-put ov 'face 'linenote-highlight-face)
             (if (overlay-buffer ov)
-                (push ov linenote--overlays))))
-      (forward-line -1)
-      (deactivate-mark)
-      (goto-char (point-min))
-      (forward-line min-line))))
+                (push ov linenote--overlays))))))))
 
 (defun linenote-mark-notes ()
-  "Highlight lines with annotated notes."
+  "Mark lines in the current buffer for which notes exist."
   (let* ((note-relpath (linenote--get-relpath))
          (notes-list (directory-files (expand-file-name (or (file-name-directory note-relpath) "")
                                                         (linenote--get-note-rootdir))
                                       nil (file-name-base note-relpath))))
-    (mapc #'linenote--highlight notes-list)))
+    (mapc #'linenote--mark-note notes-list)))
 
 (defun linenote--get-relpath ()
   "Get the relative path of the current file."
@@ -338,7 +343,7 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
               (delete-window)
               (when do-remove
                 (delete-file note-path)
-                (linenote--highlight (file-name-base note-path) t))))
+                (linenote--mark-note (file-name-base note-path) :remove))))
         (quit (delete-window))))))
 
 (defun linenote--directory-files ()
@@ -375,9 +380,9 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
       (with-current-buffer event-buffer
         (cond
          ((string= etype "deleted")
-          (linenote--highlight fpath t))
+          (linenote--mark-note fpath t))
          ((string= etype "created")
-          (linenote--highlight fpath)))))))
+          (linenote--mark-note fpath)))))))
 
 (defun linenote--dealloc-fswatch ()
   "Remove out the file watchers and corresponding list."
