@@ -40,7 +40,6 @@
 ;; - linenote-move-backward
 ;; - linenote-annotate
 ;; - linenote-remove-note
-;; - linenote-browse
 ;; - linenote-find-root-dir
 ;; - linenote-find-note-dir
 ;; - linenote-auto-open
@@ -89,9 +88,6 @@ fringe marker, set this variable to nil."
 
 (defface linenote-fringe-face '((t (:foreground "#1e90ff")))
   "Fringe color for the notes.")
-
-(defvar linenote--in-browse nil
-  "A flag of browse function.")
 
 (defvar linenote--prev-window -1
   "Temporary value to store previously focused window.")
@@ -356,22 +352,6 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
                                      (linenote--get-note-rootdir))
                    'full (concat (file-name-base (linenote--get-relpath)) ".[^.].*[^~]$")))
 
-(defun linenote--get-note-list ()
-  "Get the list of note in the current buffer."
-  (setq linenote--in-browse t)
-  (setq linenote--prev-window (selected-window))
-  (linenote--directory-files))
-
-(defun linenote--post-command-hook ()
-  "Post-command-hook implementation."
-  (when linenote--in-browse
-    (let ((focused-item (nth (symbol-value 'vertico--index) (symbol-value 'vertico--candidates))))
-      (when (length> focused-item 0)
-        (select-window linenote--prev-window)
-        (linenote--highlight focused-item)
-        (if (active-minibuffer-window)
-            (select-window (active-minibuffer-window)))))))
-
 (defun linenote--remove-overlays-at (pos)
   "Remove overlays at POS by checking the `linenote--overlays'."
   (mapc (lambda (ov)
@@ -380,17 +360,6 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
                 (delete-overlay ov)
                 (delete ov linenote--overlays))))
         (overlays-at pos)))
-
-(defun linenote--minibuf-setup-hook ()
-  "A function added to minibuf-setup-hook used for linenote."
-  (add-hook 'post-command-hook #'linenote--post-command-hook))
-
-(defun linenote--minibuf-exit-hook ()
-  "A function added to minibuf-exit-hook used for linenote."
-  (setq linenote--in-browse nil)
-  (setq linenote--prev-window -1)
-  (linenote--remove-overlays-at (line-beginning-position))
-  (remove-hook 'post-command-hook #'linenote--post-command-hook))
 
 (defun linenote--is-lock-file (file)
   "Check if FILE is a lock file."
@@ -464,8 +433,6 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
     (make-directory note-dir t)
 
     ;; Set up some hooks.
-    (add-hook 'minibuffer-setup-hook #'linenote--minibuf-setup-hook)
-    (add-hook 'minibuffer-exit-hook #'linenote--minibuf-exit-hook)
     (add-hook 'kill-buffer-hook #'linenote--buffer-killed :local)
     (add-hook 'before-revert-hook #'linenote--remove-all-overlays :local)
     (add-hook 'before-revert-hook #'linenote--remove-all-fringes :local)
@@ -494,8 +461,6 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
   (setq-local eldoc-documentation-functions
               (delete 'linenote--eldoc-show-buffer eldoc-documentation-functions))
 
-  (remove-hook 'minibuffer-setup-hook #'linenote--minibuf-setup-hook)
-  (remove-hook 'minibuffer-exit-hook #'linenote--minibuf-exit-hook)
   (remove-hook 'kill-buffer-hook #'linenote--buffer-killed :local)
   (remove-hook 'before-revert-hook #'linenote--remove-all-overlays :local)
 
@@ -503,15 +468,6 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
   (linenote--remove-all-fringes)
   (linenote--auto-open-at-cursor 'false)
   (linenote--dealloc-fswatch))
-
-(defun linenote-browse ()
-  "Browse notes for this buffer."
-  (interactive)
-  (condition-case _
-      (funcall #'linenote--browse)
-    (quit
-     (linenote--minibuf-exit-hook)
-     (linenote-mark-notes))))
 
 (defun linenote-find-root-dir ()
   "Open the linenote root directory for the current project."
@@ -577,25 +533,6 @@ note-follow.  If TOGGLE is non-nil, enable note-follow."
 (defun linenote--truncate-tags-or-spaces-from-string (str)
   "A function to truncate tags or spaces from STR."
   (car (string-split str " ")))
-
-(defun linenote--browse ()
-  "Browse notes in the current buffer.
-Argument CHOICE user's selection."
-  (let* ((reldir (expand-file-name (concat (file-name-directory (linenote--get-relpath)) "")
-                                   (linenote--get-note-rootdir))))
-    (linenote--load-tags reldir)
-    (when (null linenote--tags-hashmap)
-      (setq-local linenote--tags-hashmap (make-hash-table :test 'equal)))
-
-    (let ((choice (linenote--truncate-tags-or-spaces-from-string
-                   (completing-read "Choose the note: "
-                                    (linenote--add-tags-to-notelist (linenote--get-note-list)) nil t))))
-      (linenote-mark-notes)
-      (when linenote-use-relative
-        (setq choice (expand-file-name choice
-                                       (expand-file-name ".linenote/" (linenote--project-root)))))
-
-      (pop-to-buffer (find-file-noselect choice 'reusable-frames)))))
 
 (defun linenote--eldoc-show-buffer (&optional args)
   "Show the first line of a candidate note in the mini-buffer.
