@@ -58,7 +58,7 @@
   :group 'linenote)
 
 (defcustom linenote-use-relative t
-  "If non-nil, show relative paths in `linenote-browse'."
+  "If non-nil, use relative paths in tags."
   :type 'boolean
   :group 'linenote)
 
