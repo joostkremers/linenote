@@ -317,18 +317,12 @@ If the note exists, return the absolute path, otherwise return nil."
   "Open a note for the current line, creating one if none exists.
 Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
   (interactive)
-  (let ((note-path (linenote--get-candidate-note-path))
-        (working-buf (selected-window))
-        (current-line (line-number-at-pos)))
-    (pop-to-buffer (find-file-noselect note-path) 'reusable-frames)
-    (save-buffer)
-    (select-window working-buf)
-    (goto-char (point-min))
-    (forward-line current-line)
-    (linenote-mark-notes)
-    (forward-line -1)
-    (if (not keep-focus)
-        (pop-to-buffer (find-file-noselect note-path) 'reusable-frames))))
+  (let* ((note-path (linenote--get-candidate-note-path))
+         (buffer (find-file-noselect note-path)))
+    (linenote--mark-note note-path)
+    (if keep-focus
+        (display-buffer buffer 'reusable-frames)
+      (pop-to-buffer buffer 'reusable-frames))))
 
 (defun linenote-remove-note ()
   "Remove the annotation on the line."
