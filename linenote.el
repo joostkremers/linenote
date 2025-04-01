@@ -38,7 +38,7 @@
 
 ;; - linenote-move-forward
 ;; - linenote-move-backward
-;; - linenote-annotate
+;; - linenote-open-note
 ;; - linenote-remove-note
 ;; - linenote-find-root-dir
 ;; - linenote-find-note-dir
@@ -308,7 +308,7 @@ If the note exists, return the absolute path, otherwise return nil."
                                 linenote-default-extension)
                         (linenote--get-note-rootdir))))
 
-(defun linenote-annotate (&optional keep-focus)
+(defun linenote-open-note (&optional keep-focus)
   "Open a note for the current line, creating one if none exists.
 Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
   (interactive)
