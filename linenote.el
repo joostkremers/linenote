@@ -153,7 +153,7 @@ If called outside of a project, return nil."
       (expand-file-name (project-root project))))
 
 (defun linenote--lines-to-highlight (filename)
-  "Get beginning/end line number to highlight from `FILENAME'."
+  "Get beginning/end line number to highlight from FILENAME."
   (let* ((basename filename)
          (matched (string-match "\\`.*#L\\([0-9]+\\)\\(-L\\)?\\([0-9]+\\)?.*\\'" basename)))
     (if matched
@@ -246,19 +246,18 @@ nil."
                  nil)))
       (cons min max))))
 
-(defun linenote--get-note-linum-by-direction (line is-forward)
-  "Check if there is a note within the `LINE'.
-
-If `IS-FORWARD' is t, then find the next note.  Otherwise, find
+(defun linenote--get-note-linum-by-direction (line forward)
+  "Check if there is a note within the LINE.
+If FORWARD is non-nil, then find the next note.  Otherwise, find
 the previous note."
   (let ((res
-         (cond (is-forward (line-number-at-pos (point-max)))
+         (cond (forward (line-number-at-pos (point-max)))
                (t 0)))
         (found nil))
     (dolist (file (linenote--directory-files))
       (let* ((range (linenote--get-line-range-by-fname file))
              (min (car range))
-             (f (if is-forward #'< #'>)))
+             (f (if forward #'< #'>)))
         (if (and (funcall f line min)
                  (funcall f min res))
             (progn
@@ -266,15 +265,14 @@ the previous note."
               (setq res min)))))
     (if found res)))
 
-(defun linenote--move-forward (is-forward)
+(defun linenote--move-forward (forward)
   "Move to the next note.
-
-If `IS-FORWARD' is nil, then move to the previous note."
+If FORWARD is nil, then move to the previous note."
   (let* ((current-line (line-number-at-pos))
          (next-line (linenote--get-note-linum-by-direction
                      current-line
-                     is-forward))
-         (f (if is-forward #'> #'<)))
+                     forward))
+         (f (if forward #'> #'<)))
     (if (and next-line
              (funcall f next-line current-line))
         (forward-line (- next-line current-line))
@@ -291,7 +289,7 @@ If `IS-FORWARD' is nil, then move to the previous note."
   (linenote--move-forward nil))
 
 (defun linenote--check-line-range (line)
-  "Check if there is a note within the `LINE'."
+  "Check if there is a note within LINE."
   (let ((res nil))
     (dolist (file (linenote--directory-files))
       (let* ((range (linenote--get-line-range-by-fname file))
@@ -395,7 +393,7 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
   (remove-hook 'post-command-hook #'linenote--post-command-hook))
 
 (defun linenote--is-lock-file (file)
-  "Check if FILE is lock file."
+  "Check if FILE is a lock file."
   (string= (substring (file-name-base file) 0 2) ".#"))
 
 (defun linenote--file-changed (event)
@@ -539,9 +537,8 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
 
 (defun linenote--auto-open-at-cursor (&optional toggle)
   "Toggle linenote follow mode.
-
-This let you open the note automatically.  if `TOGGLE' is \=false,
-disable note-follow.  if `TOGGLE' is \=true, enable note-follow."
+This let you open the note automatically.  if TOGGLE is nil, disable
+note-follow.  If TOGGLE is non-nil, enable note-follow."
   (let ((set-to (cond ((eq toggle 'true) t)
                       ((eq toggle 'false) nil)
                       ((null toggle) (not linenote--follow-cursor)))))
@@ -558,7 +555,7 @@ disable note-follow.  if `TOGGLE' is \=true, enable note-follow."
            (if linenote--follow-cursor "enabled" "disabled")))
 
 (defun linenote--obtain-tag-string-by-key (key)
-  "Get a tag string by the `KEY' from the hash table."
+  "Get a tag string by the KEY from the hash table."
   (let ((result ""))
     (mapc (lambda (v)
             (setq result (concat result (format "#%s " v))))
@@ -566,7 +563,7 @@ disable note-follow.  if `TOGGLE' is \=true, enable note-follow."
     result))
 
 (defun linenote--add-tags-to-notelist (notes)
-  "Add tags to the list of `NOTES' for the current buffer."
+  "Add tags to the list of NOTES for the current buffer."
   (mapcar (lambda (note)
             (when linenote-use-relative
               (setq note (string-replace (expand-file-name ".linenote/"
@@ -578,7 +575,7 @@ disable note-follow.  if `TOGGLE' is \=true, enable note-follow."
           notes))
 
 (defun linenote--truncate-tags-or-spaces-from-string (str)
-  "A function to truncate tags or spaces from `STR'."
+  "A function to truncate tags or spaces from STR."
   (car (string-split str " ")))
 
 (defun linenote--browse ()
@@ -602,8 +599,8 @@ Argument CHOICE user's selection."
 
 (defun linenote--eldoc-show-buffer (&optional args)
   "Show the first line of a candidate note in the mini-buffer.
-Optional argument `ARGS' Return the string for eldoc.  Since we need
-only note buffer, there is no usage of `ARGS' at all."
+Optional argument ARGS Return the string for eldoc.  Since we need
+only note buffer, there is no usage of ARGS at all."
   (ignore args)
   (let ((note-path (linenote--get-candidate-note-path)))
     (when (and note-path (file-exists-p note-path))
@@ -622,7 +619,7 @@ only note buffer, there is no usage of `ARGS' at all."
             (error (message "handle error: %s" e))))))))
 
 (defun linenote--load-tags (directory)
-  "Load tags saved in the note `DIRECTORY'."
+  "Load tags saved in the note DIRECTORY."
   (setq-local linenote--tags-hashmap
               (let ((tag-file
                      (expand-file-name linenote--tags-file directory)))
@@ -633,7 +630,7 @@ only note buffer, there is no usage of `ARGS' at all."
                     (read (current-buffer)))))))
 
 (defun linenote--save-tags (directory)
-  "Save tags to the note `DIRECTORY'."
+  "Save tags to the note DIRECTORY."
   (let ((tag-file (expand-file-name linenote--tags-file directory))
         (hash-str (prin1-to-string linenote--tags-hashmap)))
     (with-temp-file tag-file
