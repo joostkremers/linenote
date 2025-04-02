@@ -413,6 +413,10 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
     (let* ((buffer-id (current-buffer))
            ;; TODO `file-notify-add-watch' triggers an error if the file
            ;; cannot be watched. We should probably handle this.
+
+           ;; TODO This sets up multiple file watchers for the same
+           ;; directory if we annotate more than one file in it. We should
+           ;; probably handle that better.
            (watch-id (file-notify-add-watch note-dir
                                             '(change)
                                             #'linenote--file-changed)))
