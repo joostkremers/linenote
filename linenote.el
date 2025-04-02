@@ -298,9 +298,8 @@ If the note exists, return the absolute path, otherwise return nil."
   "Open a note for the current line, creating one if none exists.
 Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
   (interactive)
-  (let* ((note-path (linenote--get-candidate-note-path))
-         (buffer (find-file-noselect note-path)))
-    (linenote--mark-note note-path)
+  (let ((buffer (find-file-noselect (linenote--get-candidate-note-path))))
+    (linenote--mark-note)
     (if keep-focus
         (display-buffer buffer 'reusable-frames)
       (pop-to-buffer buffer 'reusable-frames))))
