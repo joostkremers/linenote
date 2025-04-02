@@ -333,13 +333,10 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
                    'full (concat (file-name-base (linenote--get-relpath)) ".[^.].*[^~]$")))
 
 (defun linenote--remove-overlays-at (pos)
-  "Remove overlays at POS by checking the `linenote--overlays'."
-  (mapc (lambda (ov)
-          (if (member ov linenote--overlays)
-              (progn
-                (delete-overlay ov)
-                (delete ov linenote--overlays))))
-        (overlays-at pos)))
+  "Remove linenote overlays at POS."
+  (dolist (ov (overlays-at pos))
+    (if (overlay-get ov 'linenote)
+        (delete-overlay ov))))
 
 (defun linenote--is-lock-file (file)
   "Check if FILE is a lock file."
