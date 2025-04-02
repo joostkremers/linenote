@@ -171,12 +171,17 @@ If REMOVE is non-nil, remove any marks on the current line or region."
       (let ((ov (make-overlay beg end)))
         (overlay-put ov 'linenote t)
         (overlay-put ov 'face 'linenote-highlight-face)))))
+
+(defun linenote--mark-all-notes ()
   "Mark lines in the current buffer for which notes exist."
   (let* ((note-relpath (linenote--get-relpath))
-         (notes-list (directory-files (expand-file-name (or (file-name-directory note-relpath) "")
-                                                        (linenote--get-note-rootdir))
-                                      nil (file-name-base note-relpath))))
-    (mapc #'linenote--mark-note notes-list)))
+         (notes (directory-files (expand-file-name (or (file-name-directory note-relpath) "")
+                                                   (linenote--get-note-rootdir))
+                                 nil (file-name-base note-relpath))))
+    (save-mark-and-excursion
+      (dolist (note notes)
+        (let ((region (linenote--get-line-range-by-fname note)))
+          (apply #'linenote--mark-note region))))))
 
 (defun linenote--get-relpath ()
   "Get the relative path of the current file."
@@ -416,7 +421,7 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
       (push `(,watch-id . ,buffer-id) linenote--buffers))
 
     ;; Mark all existing notes.
-    (linenote-mark-notes)
+    (linenote--mark-all-notes)
 
     ;; Set up Eldoc.
     (when linenote-use-eldoc
