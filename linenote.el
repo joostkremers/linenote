@@ -57,6 +57,10 @@
 (require 'eldoc)
 (require 'project)
 
+(defgroup linenote nil
+  "Line-based source code notes."
+  :group 'tools)
+
 (defcustom linenote-default-extension ".md"
   "The default note extension."
   :type 'string
