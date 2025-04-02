@@ -69,8 +69,9 @@ directory of the project."
   :type '(string :tag "Directory"))
 
 (defcustom linenote-default-extension ".md"
-  "The default note extension."
-  :type 'string
+  "The default note extension.
+Note that the extension should include the dot."
+  :type '(string :tag "Extension")
   :group 'linenote)
 
 (defcustom linenote-use-relative t
