@@ -99,13 +99,15 @@ fringe marker, set this variable to nil."
   :group 'linenote)
 
 (defface linenote-highlight-face '((t (:underline (:color "#1e90ff" :position 'descent))))
-  "Highlight style for the notes.")
+  "Face used to highlight lines with notes attached to them."
+  :group 'linenote)
 
 (defface linenote-fringe-face '((t (:foreground "#1e90ff")))
-  "Fringe color for the notes.")
+  "Face for the fringe marker."
+  :group 'linenote)
 
 (defvar linenote--buffers nil
-  "The target buffer to ensure line tracking.")
+  "List of file watchers and associated buffers.")
 
 (defun linenote-set-fringe-bitmap (var value)
   "Setter function for `linenote-fringe-bitmap'.
