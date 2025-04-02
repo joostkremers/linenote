@@ -123,9 +123,6 @@ characters other than 0 or 1, an error is raised."
   :group 'linenote
   :set #'linenote-set-fringe-bitmap)
 
-(defvar-local linenote--overlays nil
-  "Overlays in a local buffer.")
-
 (defvar-local linenote--fwatch-id nil
   "File watcher id for linenote.")
 
