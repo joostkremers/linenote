@@ -340,7 +340,7 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
               (delete-window)
               (when do-remove
                 (delete-file note-path)
-                (linenote--mark-note (file-name-base note-path) :remove))))
+                (linenote--mark-note (linenote--get-line-range-by-fname (file-name-base note-path)) :remove))))
         (quit (delete-window))))))
 
 (defun linenote--directory-files ()
@@ -364,6 +364,7 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
   (let* ((fs-id (nth 0 event))
          (etype (nth 1 event))
          (fpath (nth 2 event))
+         (region (linenote--get-line-range-by-fname fpath))
          (event-buffer (cdr (assoc fs-id linenote--buffers))))
 
     (when (and (string-match-p
@@ -374,9 +375,9 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
       (with-current-buffer event-buffer
         (cond
          ((string= etype "deleted")
-          (linenote--mark-note fpath t))
+          (linenote--mark-note (car region) (cadr region) t))
          ((string= etype "created")
-          (linenote--mark-note fpath)))))))
+          (apply #'linenote--mark-note region)))))))
 
 (defun linenote--dealloc-fswatch ()
   "Remove out the file watchers and corresponding list."
