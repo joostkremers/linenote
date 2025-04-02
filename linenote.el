@@ -61,6 +61,13 @@
   "Line-based source code notes."
   :group 'tools)
 
+(defcustom linenote-notes-directory ".linenote"
+  "The name of the notes directory.
+Notes are stored in a directory tree mimicking the project's directory
+tree, starting this directory, which is itself created in the root
+directory of the project."
+  :type '(string :tag "Directory"))
+
 (defcustom linenote-default-extension ".md"
   "The default note extension."
   :type 'string
@@ -206,11 +213,11 @@ If REMOVE is non-nil, remove any marks on the current line or region."
     (file-name-nondirectory (buffer-file-name))))
 
 (defun linenote--get-note-rootdir ()
-  "Get the root directory of the note.
+  "Get the root directory for notes in the current project.
 If not in a project, return empty string.  This function uses
 `project.el' under the hood."
   (if-let ((project-root (linenote--project-root)))
-      (let ((note-dir (expand-file-name ".linenote" project-root)))
+      (let ((note-dir (expand-file-name linenote-notes-directory project-root)))
         (unless (file-exists-p note-dir)
           (make-directory note-dir t))
         note-dir)
@@ -489,7 +496,7 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
   "Add tags to the list of NOTES for the current buffer."
   (mapcar (lambda (note)
             (when linenote-use-relative
-              (setq note (string-replace (expand-file-name ".linenote/"
+              (setq note (string-replace (expand-file-name linenote-notes-directory
                                                            (linenote--project-root))
                                          "" note)))
             (format "%-100s%s" note
