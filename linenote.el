@@ -104,9 +104,6 @@ fringe marker, set this variable to nil."
 (defface linenote-fringe-face '((t (:foreground "#1e90ff")))
   "Fringe color for the notes.")
 
-(defvar linenote--prev-window -1
-  "Temporary value to store previously focused window.")
-
 (defvar linenote--buffers nil
   "The target buffer to ensure line tracking.")
 
