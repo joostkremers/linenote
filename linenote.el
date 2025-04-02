@@ -203,8 +203,7 @@ If REMOVE is non-nil, remove any marks on the current line or region."
                                  nil (file-name-base note-relpath))))
     (save-mark-and-excursion
       (dolist (note notes)
-        (let ((region (linenote--get-line-range-by-fname note)))
-          (apply #'linenote--mark-note region))))))
+        (apply #'linenote--mark-note (linenote--get-line-range-by-fname note))))))
 
 (defun linenote--get-relpath ()
   "Get the relative path of the current file."
