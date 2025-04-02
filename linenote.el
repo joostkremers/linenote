@@ -143,17 +143,6 @@ If called outside of a project, return nil."
   (if-let ((project (project-current)))
       (expand-file-name (project-root project))))
 
-(defun linenote--lines-to-highlight (filename)
-  "Get beginning/end line number to highlight from FILENAME."
-  (let* ((basename filename)
-         (matched (string-match "\\`.*#L\\([0-9]+\\)\\(-L\\)?\\([0-9]+\\)?.*\\'" basename)))
-    (if matched
-        (let ((line-beginning (string-to-number (match-string 1 basename)))
-              (line-end (string-to-number (or (match-string 3 basename) (match-string 1 basename)))))
-          `(,line-beginning ,(+ 1 line-end)))
-      (let ((line (string-to-number (match-string 1 basename))))
-        `(,line ,(+ 1 line))))))
-
 (defun linenote--mark-note (filename &optional remove)
   "Mark the line specified in FILENAME.
 If REMOVE is non-nil, remove markers for the relevant lines.
