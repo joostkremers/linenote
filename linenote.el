@@ -294,7 +294,8 @@ If the note exists, return the absolute path, otherwise return nil."
   (linenote--check-line-range (line-number-at-pos)))
 
 (defun linenote--get-note-path ()
-  "Get the note's absolute path for corresponding line."
+  "Create the file path for a note at point.
+Return the file path as an absolute path."
   (or (linenote--check-note-exist)
       (expand-file-name (concat (linenote--get-relpath)
                                 (linenote--create-linenum-string)
