@@ -1,4 +1,4 @@
-;;; linenote.el --- A package inspired by VSCode Linenote -*- lexical-binding: t; -*-
+;;; linenote.el --- Line-based Source code notes -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2024 Jason Kim
 ;; Copyright (C) 2025 Joost Kremers
@@ -33,8 +33,12 @@
 
 ;;; Commentary:
 
-;; This file provides a source for linenote that manages notes based on the line
-;; number in a buffer.  The package provides some interactive functions:
+;; This package makes it possible to attach notes to specific lines in
+;; source code files.  The notes are stored in separate files and are
+;; displayed when point is on a line to which a note is attached.
+
+;; To activate the mode in a buffer, use `M-X linenote-mode`.  Then, the
+;; following commands are available, which can be freely bound to keys:
 
 ;; - linenote-move-forward
 ;; - linenote-move-backward
@@ -43,7 +47,8 @@
 ;; - linenote-find-root-dir
 ;; - linenote-find-note-dir
 
-;; All notes are stored at $PROJECT_ROOT/.linenote directory.
+;; Notes are stored in a subdirectory of the project directory, by default
+;; named `.linenote`.
 
 ;;; Code:
 
