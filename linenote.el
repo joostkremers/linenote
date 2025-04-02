@@ -209,15 +209,14 @@ and \"m\" the last line."
 
 (defun linenote--get-line-range-by-fname (filename)
   "Extract line range from FILENAME.
-Return value is a cons cell of two numbers, the first and last line of
+Return value is a list of two numbers, the first and last line of
 the note.  If the note only refers to a single line, the second value is
 nil."
   (when (string-match ".*#L\\([0-9]+\\)\\(?:-L\\([0-9]+\\).*\\)?" filename)
-    (let ((min (string-to-number (match-string 1 filename)))
-          (max (if (match-beginning 2)
-                   (string-to-number (match-string 2 filename))
-                 nil)))
-      (cons min max))))
+    (let ((beg (string-to-number (match-string 1 filename)))
+          (end (and (match-beginning 2)
+                    (string-to-number (match-string 2 filename)))))
+      (list beg end))))
 
 (defun linenote--get-note-linum-by-direction (line forward)
   "Check if there is a note within the LINE.
@@ -267,7 +266,7 @@ If FORWARD is nil, then move to the previous note."
     (dolist (file (linenote--directory-files))
       (let* ((range (linenote--get-line-range-by-fname file))
              (min (car range))
-             (max (cdr range)))
+             (max (cadr range)))
         (if (and max
                  (<= min line)
                  (<= line max))
