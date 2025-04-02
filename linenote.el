@@ -140,46 +140,37 @@ If called outside of a project, return nil."
   (if-let ((project (project-current)))
       (expand-file-name (project-root project))))
 
-(defun linenote--mark-note (filename &optional remove)
-  "Mark the line specified in FILENAME.
-If REMOVE is non-nil, remove markers for the relevant lines.
-
+(defun linenote--mark-note (&optional beg end remove)
+  "Mark the region between BEG and END.
 Marking involves setting the fringe marker and/or highlighting the
 relevant lines, depending on the user settings `linenote-use-fringe' and
-`linenote-use-highlight'."
-  (save-mark-and-excursion
-    (let* ((lines (linenote--lines-to-highlight filename))
-           (min-line (1- (car lines)))
-           (max-line (1- (car (cdr lines))))
-           (diff-line (- max-line min-line)))
-      (goto-char (point-min))
-      (forward-line min-line)
-      ;; TODO We should remove all overlays in one go, not in two steps
-      ;; (the fringe marker here, the highlight below). We *should*,
-      ;; however, make sure we only delete our own overlays, which is not
-      ;; happening here right now.
-      (mapc (lambda (v) (delete-overlay v))
-            (overlays-in (line-beginning-position) (line-end-position)))
-      (when linenote-use-fringe
-        (unless remove
-          (let ((ov (make-overlay (point) (point))))
-            (overlay-put ov 'before-string
-                         (propertize "N" 'display (list linenote-use-fringe
-                                                        'linenote--fringe-bitmap
-                                                        'linenote-fringe-face)))
-            (push ov linenote--fringe-markers))))
-      (when linenote-use-highlight
-        (beginning-of-line)
-        (set-mark (line-beginning-position))
-        (forward-line diff-line)
-        (linenote--remove-overlays-at (region-beginning))
-        (unless remove
-          (let ((ov (make-overlay (region-beginning) (1- (region-end)))))
-            (overlay-put ov 'face 'linenote-highlight-face)
-            (if (overlay-buffer ov)
-                (push ov linenote--overlays))))))))
+`linenote-use-highlight'.
 
-(defun linenote-mark-notes ()
+BEG and END are the beginning and end of the buffer section to be
+marked.  If not provided, BEG and END default to the beginning and end
+of the region if it is active, or to the beginning and end of the line
+point is on if the region is inactive.
+
+If REMOVE is non-nil, remove any marks on the current line or region."
+  (setq beg (or beg
+                (use-region-beginning)
+                (line-beginning-position)))
+  (setq end (or end
+                (use-region-end)
+                (line-end-position)))
+  (linenote--remove-overlays-at beg)
+  (unless remove
+    (when linenote-use-fringe
+      (let ((ov (make-overlay beg beg)))
+        (overlay-put ov 'linenote t)
+        (overlay-put ov 'before-string
+                     (propertize "N" 'display (list linenote-use-fringe
+                                                    'linenote--fringe-bitmap
+                                                    'linenote-fringe-face)))))
+    (when linenote-use-highlight
+      (let ((ov (make-overlay beg end)))
+        (overlay-put ov 'linenote t)
+        (overlay-put ov 'face 'linenote-highlight-face)))))
   "Mark lines in the current buffer for which notes exist."
   (let* ((note-relpath (linenote--get-relpath))
          (notes-list (directory-files (expand-file-name (or (file-name-directory note-relpath) "")
