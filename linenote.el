@@ -349,12 +349,6 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
                                      (linenote--get-note-rootdir))
                    'full (concat (file-name-base (linenote--get-relpath)) ".[^.].*[^~]$")))
 
-(defun linenote--remove-overlays-at (pos)
-  "Remove linenote overlays at POS."
-  (dolist (ov (overlays-at pos))
-    (if (overlay-get ov 'linenote)
-        (delete-overlay ov))))
-
 (defun linenote--is-lock-file (file)
   "Check if FILE is a lock file."
   (string= (substring (file-name-base file) 0 2) ".#"))
@@ -389,6 +383,12 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
 (defun linenote--buffer-killed ()
   "A hook function for `kill-buffer-hook'."
   (linenote--dealloc-fswatch))
+
+(defun linenote--remove-overlays-at (pos)
+  "Remove linenote overlays at POS."
+  (dolist (ov (overlays-at pos))
+    (if (overlay-get ov 'linenote)
+        (delete-overlay ov))))
 
 (defun linenote--remove-all-marks ()
   "Remove all overlays in the current buffer.
