@@ -55,6 +55,9 @@
 ;; - Properly deal with directories that are not part of a project: Should
 ;;   they be excluded altogether, or should there be some fallback
 ;;   behaviour?
+;;
+;; - What happens when the user wants to create a new note in a region that
+;;   already has a note attached to it?
 
 ;;; Code:
 
@@ -295,26 +298,12 @@ If FORWARD is nil, then move to the previous note."
   (interactive)
   (linenote--move-forward nil))
 
-(defun linenote--check-line-range (line)
-  "Check if there is a note within LINE."
-  (let ((res nil))
-    (dolist (file (linenote--directory-files))
-      (let* ((range (linenote--get-line-range-by-fname file))
-             (min (car range))
-             (max (cadr range)))
-        (if (and max
-                 (<= min line)
-                 (<= line max))
-            (setq res file)
-          (if (and (null max)
-                   (= min line))
-              (setq res file)))))
-    res))
-
-(defun linenote--check-note-exist ()
-  "Check whether the note for current line exists.
-If the note exists, return the absolute path, otherwise return nil."
-  (linenote--check-line-range (line-number-at-pos)))
+(defun linenote--get-note-at-point ()
+  "Return the note overlay at point.
+If there is no note at point, return nil."
+  (seq-find (lambda (ov)
+              (overlay-get ov 'linenote))
+            (overlays-in (line-beginning-position) (line-end-position))))
 
 (defun linenote--create-note-path ()
   "Create the file path for a note at point.
@@ -556,7 +545,7 @@ only note buffer, there is no usage of ARGS at all."
   "Add tags corresponding to the current line."
   (interactive)
 
-  (if (null (linenote--check-note-exist))
+  (if (null (linenote--get-note-at-point))
       (message "Note does not exist on the current line.")
     (let ((reldir (expand-file-name
                    (concat (file-name-directory (linenote--get-relpath)) "")
