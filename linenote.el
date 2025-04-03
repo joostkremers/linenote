@@ -133,7 +133,11 @@ characters other than 0 or 1, an error is raised."
     "00111100"
     "00011000"
     "00000000")
-  "Define a fringe bitmap to indicate notes."
+  "The fringe bitmap used to indicate notes.
+0 means no pixel, 1 means a pixel.  In practice, this means that 1
+represents the foreground color of `linenote-fringe-face' and 0
+represents the background color of the fringe, or, if customized, of
+`linenote-fringe-face'."
   :type '(repeat (string :tag ""))
   :group 'linenote
   :set #'linenote-set-fringe-bitmap)
