@@ -221,9 +221,12 @@ If REMOVE is non-nil, remove any marks on the current line or region."
         (apply #'linenote--mark-note (linenote--get-line-range-by-fname note))))))
 
 (defun linenote--get-relpath ()
-  "Get the relative path of the current file."
-  (if (linenote--project-root)
-      (string-remove-prefix (linenote--project-root) (buffer-file-name))
+  "Get the relative path of the current file.
+The path is calculated starting from the project root.  If the current
+file is not part of a project, return the filename without directory
+part."
+  (if-let* ((root (linenote--project-root)))
+      (file-relative-name (buffer-file-name) root)
     (file-name-nondirectory (buffer-file-name))))
 
 (defun linenote--create-linenum-string (&optional section)
