@@ -74,9 +74,8 @@ tree, starting this directory, which is itself created in the root
 directory of the project."
   :type '(string :tag "Directory"))
 
-(defcustom linenote-default-extension ".md"
-  "The default note extension.
-Note that the extension should include the dot."
+(defcustom linenote-default-extension "md"
+  "The default note extension."
   :type '(string :tag "Extension")
   :group 'linenote)
 
@@ -322,11 +321,13 @@ If the note exists, return the absolute path, otherwise return nil."
 (defun linenote--get-note-path ()
   "Create the file path for a note at point.
 Return the file path as an absolute path."
-  (or (linenote--check-note-exist)
-      (expand-file-name (concat (linenote--get-relpath)
-                                (linenote--create-linenum-string)
-                                linenote-default-extension)
-                        (linenote--get-note-rootdir))))
+  ;; TODO check if there's some way to make sure the path separator is
+  ;; added without doing so explicitly.
+  (expand-file-name (file-name-with-extension (concat (linenote--get-relpath)
+                                                      "/"
+                                                      (linenote--create-linenum-string))
+                                              linenote-default-extension)
+                    (linenote--get-note-root)))
 
 (defun linenote-open-note (&optional keep-focus)
   "Open a note for the current line, creating one if none exists.
