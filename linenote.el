@@ -218,7 +218,7 @@ If REMOVE is non-nil, remove any marks on the current line or region."
                                  nil (file-name-base note-relpath))))
     (save-mark-and-excursion
       (dolist (note notes)
-        (apply #'linenote--mark-note (linenote--get-line-range-by-fname note))))))
+        (apply #'linenote--mark-note (linenote--extract-lines-from-filename note))))))
 
 (defun linenote--get-relpath ()
   "Get the relative path of the current file.
@@ -246,7 +246,7 @@ region is active, or point if the region is inactive."
                            (line-number-at-pos (1- (region-end)))))
    (t (format "#L%S" (line-number-at-pos)))))
 
-(defun linenote--get-line-range-by-fname (filename)
+(defun linenote--extract-lines-from-filename (filename)
   "Extract line range from FILENAME.
 Return value is a list of two numbers, the first and last line of
 the note.  If the note only refers to a single line, the second value is
@@ -266,7 +266,7 @@ the previous note."
                (t 0)))
         (found nil))
     (dolist (file (linenote--directory-files))
-      (let* ((range (linenote--get-line-range-by-fname file))
+      (let* ((range (linenote--extract-lines-from-filename file))
              (min (car range))
              (f (if forward #'< #'>)))
         (if (and (funcall f line min)
@@ -354,7 +354,7 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
               (delete-window)
               (when do-remove
                 (delete-file note-path)
-                (linenote--mark-note (linenote--get-line-range-by-fname (file-name-base note-path)) :remove))))
+                (linenote--mark-note (linenote--extract-lines-from-filename (file-name-base note-path)) :remove))))
         (quit (delete-window))))))
 
 (defun linenote--directory-files ()
@@ -372,7 +372,7 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
   (let* ((fs-id (nth 0 event))
          (etype (nth 1 event))
          (fpath (nth 2 event))
-         (region (linenote--get-line-range-by-fname fpath))
+         (region (linenote--extract-lines-from-filename fpath))
          (event-buffer (cdr (assoc fs-id linenote--buffers))))
 
     (when (and (string-match-p
@@ -514,7 +514,7 @@ This removes both the fringe markers and the highlights."
                                          "" note)))
             (format "%-100s%s" note
                     (linenote--obtain-tag-string-by-key
-                     (linenote--get-line-range-by-fname note))))
+                     (linenote--extract-lines-from-filename note))))
           notes))
 
 (defun linenote--eldoc-show-buffer (&optional args)
