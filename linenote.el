@@ -145,9 +145,6 @@ represents the background color of the fringe, or, if customized, of
 (defvar-local linenote--fwatch-id nil
   "File watcher id for linenote.")
 
-(defvar-local linenote--fringe-markers nil
-  "A list of fringe markers.")
-
 (defconst linenote--tags-file "tags")
 
 (defvar-local linenote--tags-hashmap nil
