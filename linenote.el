@@ -222,17 +222,22 @@ If not in a project, return empty string.  This function uses
         note-dir)
     ""))
 
-(defun linenote--create-linenum-string ()
-  "Create a line number string for the line at point.
-Return value is a string of the form \"#L<n>\", with \"n\" being the
-line number.  If the region is active, return a line range instead, of
-the form \"#L<n>-L<m>\", with \"n\" being the first line of the region
-and \"m\" the last line."
-  (if (use-region-p)
-      (format "#L%S-L%S"
-              (line-number-at-pos (use-region-beginning))
-              (line-number-at-pos (- (use-region-end) 1)))
-    (format "#L%S" (line-number-at-pos))))
+(defun linenote--create-linenum-string (&optional section)
+  "Create a line number string for SECTION.
+SECTION is a list of two line numbers, <n1> and <n2>.  Return value is a
+string of the form \"#L<n1>-L<n2>\".  <n2> can also be nil, in which
+case the string returned has the form \"#L<n1>\".
+
+If SECTION is omitted, use the beginning and end of the region if the
+region is active, or point if the region is inactive."
+  (cond
+   (section (if (cadr section)
+                (format "#L%S-L%S" (car section) (cadr section))
+              (format "#L%S" (car section))))
+   ((use-region-p) (format "#L%S-L%S"
+                           (line-number-at-pos (region-beginning))
+                           (line-number-at-pos (1- (region-end)))))
+   (t (format "#L%S" (line-number-at-pos)))))
 
 (defun linenote--get-line-range-by-fname (filename)
   "Extract line range from FILENAME.
