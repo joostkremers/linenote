@@ -161,6 +161,16 @@ If called outside of a project, return nil."
   (if-let ((project (project-current)))
       (expand-file-name (project-root project))))
 
+;; TODO Check if this function should really return the empty string if
+;; there is no project root.
+(defun linenote--get-note-root ()
+  "Get the root directory for notes in the current project.
+If not in a project, return empty string.  This function uses
+`project.el' under the hood."
+  (if-let ((project-root (linenote--project-root)))
+      (expand-file-name linenote-notes-directory project-root)
+    ""))
+
 (defun linenote--mark-note (&optional beg end remove)
   "Mark the region between BEG and END.
 Marking involves setting the fringe marker and/or highlighting the
@@ -204,7 +214,7 @@ If REMOVE is non-nil, remove any marks on the current line or region."
   "Mark lines in the current buffer for which notes exist."
   (let* ((note-relpath (linenote--get-relpath))
          (notes (directory-files (expand-file-name (or (file-name-directory note-relpath) "")
-                                                   (linenote--get-note-rootdir))
+                                                   (linenote--get-note-root))
                                  nil (file-name-base note-relpath))))
     (save-mark-and-excursion
       (dolist (note notes)
@@ -215,17 +225,6 @@ If REMOVE is non-nil, remove any marks on the current line or region."
   (if (linenote--project-root)
       (string-remove-prefix (linenote--project-root) (buffer-file-name))
     (file-name-nondirectory (buffer-file-name))))
-
-(defun linenote--get-note-rootdir ()
-  "Get the root directory for notes in the current project.
-If not in a project, return empty string.  This function uses
-`project.el' under the hood."
-  (if-let ((project-root (linenote--project-root)))
-      (let ((note-dir (expand-file-name linenote-notes-directory project-root)))
-        (unless (file-exists-p note-dir)
-          (make-directory note-dir t))
-        note-dir)
-    ""))
 
 (defun linenote--create-linenum-string (&optional section)
   "Create a line number string for SECTION.
@@ -358,7 +357,7 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
 (defun linenote--directory-files ()
   "Do `directory-files' to find notes (except for files with names ending with ~)."
   (directory-files (expand-file-name (or (file-name-directory (linenote--get-relpath)) "")
-                                     (linenote--get-note-rootdir))
+                                     (linenote--get-note-root))
                    'full (concat (file-name-base (linenote--get-relpath)) ".[^.].*[^~]$")))
 
 (defun linenote--is-lock-file (file)
@@ -437,7 +436,7 @@ This removes both the fringe markers and the highlights."
   ;; Make sure the note directory exists.
   (let ((note-dir (expand-file-name
                    (or (file-name-directory (linenote--get-relpath)) "")
-                   (linenote--get-note-rootdir))))
+                   (linenote--get-note-root))))
     (make-directory note-dir t)
 
     ;; Set up some hooks.
@@ -481,7 +480,7 @@ This removes both the fringe markers and the highlights."
 (defun linenote-open-root-dir ()
   "Open the linenote root directory for the current project."
   (interactive)
-  (let ((note-dir (linenote--get-note-rootdir)))
+  (let ((note-dir (linenote--get-note-root)))
     (if (file-exists-p note-dir)
         (find-file note-dir)
       (error "No notes found"))))
@@ -490,7 +489,7 @@ This removes both the fringe markers and the highlights."
   "Open the note directory for the current file."
   (interactive)
   (let ((note-dir (expand-file-name (or (file-name-directory (linenote--get-relpath)) "")
-                                    (linenote--get-note-rootdir))))
+                                    (linenote--get-note-root))))
     (if (file-exists-p note-dir)
         (find-file note-dir)
       (error "No notes found"))))
@@ -566,7 +565,7 @@ only note buffer, there is no usage of ARGS at all."
       (message "Note does not exist on the current line.")
     (let ((reldir (expand-file-name
                    (concat (file-name-directory (linenote--get-relpath)) "")
-                   (linenote--get-note-rootdir))))
+                   (linenote--get-note-root))))
       (linenote--load-tags reldir)
       (when (null linenote--tags-hashmap)
         (setq-local linenote--tags-hashmap (make-hash-table :test 'equal)))
@@ -585,7 +584,7 @@ only note buffer, there is no usage of ARGS at all."
   (interactive)
 
   (let ((reldir (expand-file-name (concat (file-name-directory (linenote--get-relpath)) "")
-                                  (linenote--get-note-rootdir))))
+                                  (linenote--get-note-root))))
 
     (linenote--load-tags reldir)
     (let* ((tagkey (linenote--create-linenum-string))
