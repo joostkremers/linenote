@@ -190,25 +190,21 @@ If REMOVE is non-nil, remove any marks on the current line or region."
                 (use-region-end)
                 (line-end-position)))
   (linenote--remove-overlays-at beg)
-  ;; We record the start and end lines of the marked text in the
-  ;; overlay. These are used to retrieve the note file. For this reason,
-  ;; they are not updated when the position of the annotated text changes.
+  ;; We record the start and end lines of the marked text in the overlay,
+  ;; in order to be able to retrieve the note file. For this reason, they
+  ;; are not updated when the position of the annotated text changes.
   (unless remove
     (let ((start-line (line-number-at-pos beg))
-          (end-line (line-number-at-pos end)))
+          (end-line (line-number-at-pos end))
+          (ov (make-overlay beg end)))
+      (overlay-put ov 'linenote (cons start-line end-line))
       (when linenote-use-fringe
-        ;; The fringe marker is only put on the first line of the annotated
-        ;; section, so we create an overlay from `beg' to `beg'.
-        (let ((ov (make-overlay beg beg)))
-          (overlay-put ov 'linenote (cons start-line end-line))
-          (overlay-put ov 'before-string
-                       (propertize "N" 'display (list linenote-use-fringe
-                                                      'linenote--fringe-bitmap
-                                                      'linenote-fringe-face)))))
+        (overlay-put ov 'before-string
+                     (propertize "N" 'display (list linenote-use-fringe
+                                                    'linenote--fringe-bitmap
+                                                    'linenote-fringe-face))))
       (when linenote-use-highlight
-        (let ((ov (make-overlay beg end)))
-          (overlay-put ov 'linenote (cons start-line end-line))
-          (overlay-put ov 'face 'linenote-highlight-face))))))
+        (overlay-put ov 'face 'linenote-highlight-face)))))
 
 (defun linenote--mark-all-notes ()
   "Mark lines in the current buffer for which notes exist."
