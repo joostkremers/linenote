@@ -320,7 +320,7 @@ If FORWARD is nil, then move to the previous note."
 If the note exists, return the absolute path, otherwise return nil."
   (linenote--check-line-range (line-number-at-pos)))
 
-(defun linenote--get-note-path ()
+(defun linenote--create-note-path ()
   "Create the file path for a note at point.
 Return the file path as an absolute path."
   ;; TODO check if there's some way to make sure the path separator is
@@ -335,7 +335,7 @@ Return the file path as an absolute path."
   "Open a note for the current line, creating one if none exists.
 Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
   (interactive)
-  (let ((buffer (find-file-noselect (linenote--get-note-path))))
+  (let ((buffer (find-file-noselect (linenote--create-note-path))))
     (linenote--mark-note)
     (if keep-focus
         (display-buffer buffer 'reusable-frames)
@@ -344,7 +344,7 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
 (defun linenote-remove-note ()
   "Remove the annotation on the line."
   (interactive)
-  (let ((note-path (linenote--get-note-path)))
+  (let ((note-path (linenote--create-note-path)))
     (if (not (file-exists-p note-path))
         (error "No notes to remove from here")
       (condition-case _
@@ -522,7 +522,7 @@ This removes both the fringe markers and the highlights."
 Optional argument ARGS Return the string for eldoc.  Since we need
 only note buffer, there is no usage of ARGS at all."
   (ignore args)
-  (let ((note-path (linenote--get-note-path)))
+  (let ((note-path (linenote--create-note-path)))
     (when (and note-path (file-exists-p note-path))
       (with-temp-buffer
         (insert-file-contents note-path)
