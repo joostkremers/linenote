@@ -44,8 +44,8 @@
 ;; - linenote-move-backward
 ;; - linenote-open-note
 ;; - linenote-remove-note
-;; - linenote-find-root-dir
-;; - linenote-find-note-dir
+;; - linenote-open-root-dir
+;; - linenote-open-note-dir
 
 ;; Notes are stored in a subdirectory of the project directory, by default
 ;; named `.linenote`.
@@ -464,7 +464,7 @@ This removes both the fringe markers and the highlights."
   (linenote--remove-all-marks)
   (linenote--dealloc-fswatch))
 
-(defun linenote-find-root-dir ()
+(defun linenote-open-root-dir ()
   "Open the linenote root directory for the current project."
   (interactive)
   (let ((note-dir (linenote--get-note-rootdir)))
@@ -472,7 +472,7 @@ This removes both the fringe markers and the highlights."
         (find-file note-dir)
       (error "No notes found"))))
 
-(defun linenote-find-note-dir ()
+(defun linenote-open-note-dir ()
   "Open the note directory for the current file."
   (interactive)
   (let ((note-dir (expand-file-name (or (file-name-directory (linenote--get-relpath)) "")
