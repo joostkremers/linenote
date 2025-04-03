@@ -390,13 +390,12 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
   "A hook function for `kill-buffer-hook'."
   (linenote--dealloc-fswatch))
 
-(defun linenote--remove-all-overlays ()
-  "Remove all overlays in the current buffer."
-  (mapc #'delete-overlay linenote--overlays))
-
-(defun linenote--remove-all-fringes ()
-  "Remove all fringes in the current buffer."
-  (mapc #'delete-overlay linenote--fringe-markers))
+(defun linenote--remove-all-marks ()
+  "Remove all overlays in the current buffer.
+This removes both the fringe markers and the highlights."
+  (dolist (ov (overlays-in (point-min) (point-max)))
+    (when (overlay-get ov 'linenote)
+      (delete-overlay ov))))
 
 ;; To silence the byte-compiler when we assign this variable directly
 ;; below.
@@ -429,8 +428,7 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
 
     ;; Set up some hooks.
     (add-hook 'kill-buffer-hook #'linenote--buffer-killed :local)
-    (add-hook 'before-revert-hook #'linenote--remove-all-overlays :local)
-    (add-hook 'before-revert-hook #'linenote--remove-all-fringes :local)
+    (add-hook 'before-revert-hook #'linenote--remove-all-marks :local)
 
     ;; Set up a file watcher for the note directory.
     (let* ((buffer-id (current-buffer))
@@ -461,10 +459,9 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
               (delete 'linenote--eldoc-show-buffer eldoc-documentation-functions))
 
   (remove-hook 'kill-buffer-hook #'linenote--buffer-killed :local)
-  (remove-hook 'before-revert-hook #'linenote--remove-all-overlays :local)
+  (remove-hook 'before-revert-hook #'linenote--remove-all-marks :local)
 
-  (linenote--remove-all-overlays)
-  (linenote--remove-all-fringes)
+  (linenote--remove-all-marks)
   (linenote--dealloc-fswatch))
 
 (defun linenote-find-root-dir ()
