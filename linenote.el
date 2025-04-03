@@ -114,10 +114,9 @@ fringe marker, set this variable to nil."
 VAR is the variable `linenote-fringe-bitmap', VALUE should be a list of
 strings representing binary numbers.  If any string in VALUE contains
 characters other than 0 or 1, an error is raised."
-  (mapc (lambda (s)
-          (unless (string-match-p "\\`[01]+\\'" s)
-            (error "Not a binary number: %S" s)))
-        value)
+  (dolist (s value)
+    (unless (string-match-p "\\`[01]+\\'" s)
+      (error "Not a binary number: %S" s)))
   (custom-set-default var value)
   (define-fringe-bitmap 'linenote--fringe-bitmap
     (apply #'vector (mapcar (lambda (s)
