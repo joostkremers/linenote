@@ -514,10 +514,6 @@ This removes both the fringe markers and the highlights."
                      (linenote--get-line-range-by-fname note))))
           notes))
 
-(defun linenote--truncate-tags-or-spaces-from-string (str)
-  "A function to truncate tags or spaces from STR."
-  (car (string-split str " ")))
-
 (defun linenote--eldoc-show-buffer (&optional args)
   "Show the first line of a candidate note in the mini-buffer.
 Optional argument ARGS Return the string for eldoc.  Since we need
