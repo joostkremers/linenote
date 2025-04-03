@@ -50,6 +50,12 @@
 ;; Notes are stored in a subdirectory of the project directory, by default
 ;; named `.linenote`.
 
+;; TODO
+;;
+;; - Properly deal with directories that are not part of a project: Should
+;;   they be excluded altogether, or should there be some fallback
+;;   behaviour?
+
 ;;; Code:
 
 (require 'subr-x)
