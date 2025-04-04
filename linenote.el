@@ -342,9 +342,8 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
 (defun linenote-remove-note ()
   "Remove the annotation on the line."
   (interactive)
-  (let ((note-path (linenote--create-note-path)))
-    (if (not (file-exists-p note-path))
-        (error "No notes to remove from here")
+  (if-let* ((note (linenote--get-note-at-point))
+            (note-path (linenote--create-note-path)))
       (condition-case _
           (progn
             (pop-to-buffer (find-file-noselect note-path) 'reusable-frames)
@@ -353,7 +352,8 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
               (when do-remove
                 (delete-file note-path)
                 (linenote--mark-note (linenote--extract-lines-from-filename (file-name-base note-path)) :remove))))
-        (quit (delete-window))))))
+        (quit (delete-window)))
+    (error "No note at point")))
 
 (defun linenote--directory-files ()
   "Do `directory-files' to find notes (except for files with names ending with ~)."
