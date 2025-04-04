@@ -1,4 +1,4 @@
-;;; linenote.el --- Line-based Source code notes -*- lexical-binding: t; -*-
+;;; linenote.el --- Line-based source code notes -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2024 Jason Kim
 ;; Copyright (C) 2025 Joost Kremers
