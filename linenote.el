@@ -323,12 +323,10 @@ If there is no note at point, return nil."
 (defun linenote--create-note-path ()
   "Create the file path for a note at point.
 Return the file path as an absolute path."
-  ;; TODO check if there's some way to make sure the path separator is
-  ;; added without doing so explicitly.
-  (expand-file-name (file-name-with-extension (concat (linenote--get-relpath)
-                                                      "/"
-                                                      (linenote--create-linenum-string))
-                                              linenote-default-extension)
+  (expand-file-name (concat (linenote--get-relpath)
+                            (linenote--create-linenum-string)
+                            "."
+                            linenote-default-extension)
                     (linenote--get-note-root)))
 
 (defun linenote-open/create-note (&optional keep-focus)
