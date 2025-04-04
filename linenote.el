@@ -10,7 +10,7 @@
 ;; Version: 1.1.3
 ;; Keywords: tools, note, org
 ;; Homepage: https://github.com/seokbeomKim/org-linenote
-;; Package-Requires: ((emacs "29.1") (eldoc "1.11"))
+;; Package-Requires: ((emacs "29.1") (eldoc "1.11") (transient "0.7.2.2"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -65,6 +65,7 @@
 (require 'filenotify)
 (require 'eldoc)
 (require 'project)
+(require 'transient)
 
 (defgroup linenote nil
   "Line-based source code notes."
@@ -592,6 +593,20 @@ This removes both the fringe markers and the highlights."
           (remhash tagkey linenote--tags-hashmap)
           (puthash tagkey prev-val linenote--tags-hashmap)
           (linenote--save-tags reldir))))))
+
+(transient-define-prefix linenote-transient ()
+  ["Linenote\n"
+   [" ────Notes────"
+    ("l" linenote-mode :description (lambda ()
+                                      (format "%s Linenote mode" (if linenote-mode
+                                                                     (propertize "*" 'face '(:weight bold))
+                                                                   " "))))
+    ("o" "  Create/open note" linenote-open/create-note)
+    ("d" "  Delete note" linenote-remove-note)]
+   [" ────Browse────"
+    ("n" "  Next note" linenote-move-forward :transient t)
+    ("p" "  Previous note" linenote-move-backward :transient t)]])
+
 
 (provide 'linenote)
 ;;; linenote.el ends here
