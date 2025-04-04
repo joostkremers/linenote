@@ -174,40 +174,55 @@ If not in a project, return empty string.  This function uses
       (expand-file-name linenote-notes-directory project-root)
     ""))
 
-(defun linenote--mark-note (&optional beg end remove)
-  "Mark the region between BEG and END.
+(defun linenote--mark-note (&optional start-line end-line remove)
+  "Mark the region between START-LINE and END-LINE.
 Marking involves setting the fringe marker and/or highlighting the
 relevant lines, depending on the user settings `linenote-use-fringe' and
 `linenote-use-highlight'.
 
-BEG and END are the beginning and end of the buffer section to be
-marked.  If not provided, BEG and END default to the beginning and end
-of the region if it is active, or to the beginning and end of the line
-point is on if the region is inactive.
+BEG and END are the start and end lines of the buffer section to be
+marked.  If not provided, START-LINE and END-LINE default to the start
+and end lines of the region if it is active, or to the line point is on
+if the region is inactive.
 
 If REMOVE is non-nil, remove any marks on the current line or region."
-  (setq beg (or beg
-                (use-region-beginning)
-                (line-beginning-position)))
-  (setq end (or end
-                (use-region-end)
-                (line-end-position)))
-  (linenote--remove-overlays-at beg)
-  ;; We record the start and end lines of the marked text in the overlay,
-  ;; in order to be able to retrieve the note file. For this reason, they
-  ;; are not updated when the position of the annotated text changes.
-  (unless remove
-    (let ((start-line (line-number-at-pos beg))
-          (end-line (line-number-at-pos end))
-          (ov (make-overlay beg end)))
-      (overlay-put ov 'linenote (cons start-line end-line))
-      (when linenote-use-fringe
-        (overlay-put ov 'before-string
-                     (propertize "N" 'display (list linenote-use-fringe
-                                                    'linenote--fringe-bitmap
-                                                    'linenote-fringe-face))))
-      (when linenote-use-highlight
-        (overlay-put ov 'face 'linenote-highlight-face)))))
+  ;; This is a little annoying: we need both the start and end lines, and
+  ;; the start and end character positions.
+  (let (start-pos end-pos)
+    (cond
+     (start-line (save-excursion  ; If a start line is provided...
+                   (goto-char (point-min)) ; ...get its character position for the overlay.
+                   (forward-line (1- start-line))
+                   (setq start-pos (line-beginning-position))
+                   (if (null end-line) ; If there's no end line...
+                       (setq end-pos (line-end-position)) ; ...we mark until the end of the line.
+                     (goto-char (point-min))
+                     (forward-line (1- end-line))
+                     (setq end-pos (line-end-position)))))
+     ((use-region-p) (setq start-pos (region-beginning)
+                           start-line (line-number-at-pos start-pos)
+                           end-pos (region-end)
+                           end-line (line-number-at-pos end-pos)))
+     (t (setq start-pos (line-beginning-position)
+              start-line (line-number-at-pos)
+              end-pos (line-end-position)
+              end-line nil))) ; nil here indicates the note only covers one line.
+    (linenote--remove-overlays-at start-pos)
+    ;; We record the start and end lines of the marked text in the overlay,
+    ;; in order to be able to retrieve the note file. For this reason, they
+    ;; are not updated when the position of the annotated text
+    ;; changes. Note that if `end-line' is nil, the note only covers one
+    ;; line.
+    (unless remove
+      (let ((ov (make-overlay start-pos end-pos)))
+        (overlay-put ov 'linenote (cons start-line end-line))
+        (when linenote-use-fringe
+          (overlay-put ov 'before-string
+                       (propertize "N" 'display (list linenote-use-fringe
+                                                      'linenote--fringe-bitmap
+                                                      'linenote-fringe-face))))
+        (when linenote-use-highlight
+          (overlay-put ov 'face 'linenote-highlight-face))))))
 
 (defun linenote--mark-all-notes ()
   "Mark lines in the current buffer for which notes exist."
