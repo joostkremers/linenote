@@ -397,7 +397,7 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
   (linenote--dealloc-fswatch))
 
 (defun linenote--remove-overlays-at (pos)
-  "Remove linenote overlays at POS."
+  "Remove linenote overlays at character position POS."
   ;; We use `overlay-in' here, because fringe markers are created with
   ;; empty overlays, which `overlays-at' does not detect.
   (dolist (ov (overlays-in pos (1+ pos)))
