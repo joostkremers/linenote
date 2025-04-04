@@ -515,26 +515,24 @@ This removes both the fringe markers and the highlights."
                      (linenote--extract-lines-from-filename note))))
           notes))
 
-(defun linenote--eldoc-show-buffer (&optional args)
-  "Show the first line of a candidate note in the mini-buffer.
-Optional argument ARGS Return the string for eldoc.  Since we need
-only note buffer, there is no usage of ARGS at all."
-  (ignore args)
-  (let ((note-path (linenote--create-note-path)))
-    (when (and note-path (file-exists-p note-path))
-      (with-temp-buffer
-        (insert-file-contents note-path)
-        (let* ((file-buffer (buffer-string))
-               (file-ext (file-name-extension note-path))
-               (language '(("org" . "org")
-                           ("md" . "markdown"))))
-          (condition-case e
-              (if (fboundp 'lsp--render-string)
-                  (lsp--render-string file-buffer (cdr (assoc file-ext language)))
-                ;; TODO We should come up with a more portable way to
-                ;; render the buffer.
-                file-buffer)
-            (error (message "handle error: %s" e))))))))
+(defun linenote--eldoc-show-buffer (&optional _args)
+  "Linenote documentation function for Eldoc."
+  (if-let* ((note (linenote--get-note-at-point))
+            (note-path (linenote--create-note-path)))
+      (when (file-exists-p note-path)
+        (with-temp-buffer
+          (insert-file-contents note-path)
+          (let* ((file-buffer (buffer-string))
+                 (file-ext (file-name-extension note-path))
+                 (language '(("org" . "org")
+                             ("md" . "markdown"))))
+            (condition-case e
+                (if (fboundp 'lsp--render-string)
+                    (lsp--render-string file-buffer (cdr (assoc file-ext language)))
+                  ;; TODO We should come up with a more portable way to
+                  ;; render the buffer.
+                  file-buffer)
+              (error (message "handle error: %s" e))))))))
 
 (defun linenote--load-tags (directory)
   "Load tags saved in the note DIRECTORY."
