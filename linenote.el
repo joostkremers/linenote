@@ -58,6 +58,16 @@
 ;;
 ;; - What happens when the user wants to create a new note in a region that
 ;;   already has a note attached to it?
+;;
+;; - Consider the following pattern:
+;;
+;;         (if-let* ((note (linenote--get-note-at-point))
+;;                   (note-path (linenote--create-note-path)))
+;;           ...)
+;;
+;;   This occurs a few times and is actually not very pretty, because
+;;   `linenote--create-note-path' calls `linenote--get-note-at-point'
+;;   itself.  I'm not sure there's an elegant way to fix this, though.
 
 ;;; Code:
 
