@@ -396,6 +396,24 @@ This removes both the fringe markers and the highlights."
     (when (overlay-get ov 'linenote)
       (delete-overlay ov))))
 
+(defun linenote-relocate-note (new-start-line)
+  "Relocate the note at point to NEW-START-LINE."
+  (interactive "NRelocate note to line number: ")
+  (when (> new-start-line (count-lines 1 (1+ (buffer-size))))
+    (user-error "Line %d does not exist" new-start-line))
+  (when-let* ((note (linenote--get-note-at-point))
+              (old-lines (overlay-get note 'linenote))
+              (old-start-line (car old-lines)))
+    (when (= old-start-line new-start-line)
+      (user-error "Note is already at line %d" new-start-line))
+    (let* ((old-note-path (linenote--create-note-path))
+           (new-end-line (if (cdr old-lines)
+                             (+ new-start-line (- (cdr old-lines) old-start-line))))
+           (new-note-path (linenote--create-note-path new-start-line new-end-line)))
+      (linenote--mark-note (car old-lines) (cdr old-lines) :remove)
+      (linenote--mark-note new-start-line new-end-line)
+      (rename-file old-note-path new-note-path))))
+
 ;; To silence the byte-compiler when we assign this variable directly
 ;; below.
 (defvar linenote-mode)
