@@ -630,10 +630,16 @@ This removes both the fringe markers and the highlights."
                                                                      (propertize "*" 'face '(:weight bold))
                                                                    " "))))
     ("o" "  Create/open note" linenote-open/create-note)
+    ("r" "  Relocate note" linenote-relocate-note)
     ("d" "  Delete note" linenote-remove-note)]
+
+   [" ────Move────"
+    ("n" "  Next note" linenote-next-note :transient t)
+    ("p" "  Previous note" linenote-next-note :transient t)]
+
    [" ────Browse────"
-    ("n" "  Next note" linenote-move-forward :transient t)
-    ("p" "  Previous note" linenote-move-backward :transient t)]])
+    ("Dn" " Dired notes directory for file" linenote-open-note-dir)
+    ("Ds" " Dired notes root directory" linenote-open-root-dir)]])
 
 
 (provide 'linenote)
