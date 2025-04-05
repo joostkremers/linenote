@@ -289,6 +289,32 @@ nil."
                     (string-to-number (match-string 2 filename)))))
       (cons beg end))))
 
+(defun linenote-next-note ()
+  "Move to the next note in the buffer."
+  (interactive)
+  ;; If we're in a note, move out of it first.
+  (let ((start-pos (point)))
+    (when (linenote--get-note-at-point)
+      (goto-char (next-single-char-property-change (point) 'linenote)))
+    (let ((next-note-pos (next-single-char-property-change (point) 'linenote)))
+      (if (< next-note-pos (point-max))
+          (goto-char next-note-pos)
+        (goto-char start-pos)
+        (user-error "No next note")))))
+
+(defun linenote-previous-note ()
+  "Move to the previous note in the buffer."
+  (interactive)
+  ;; If we're in a note, move out of it first.
+  (let ((start-pos (point)))
+    (when (linenote--get-note-at-point)
+      (goto-char (previous-single-char-property-change (point) 'linenote)))
+    (let ((prev-note-pos (previous-single-char-property-change (point) 'linenote)))
+      (if (> prev-note-pos (point-min))
+          (goto-char prev-note-pos)
+        (goto-char start-pos)
+        (user-error "No previous note")))))
+
 (defun linenote--get-note-at-point ()
   "Return the note overlay at point.
 If there is no note at point, return nil."
