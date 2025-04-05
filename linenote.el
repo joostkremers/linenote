@@ -296,11 +296,16 @@ If there is no note at point, return nil."
               (overlay-get ov 'linenote))
             (overlays-in (line-beginning-position) (line-end-position))))
 
-(defun linenote--create-note-path ()
-  "Create the file name for a note at point.
-Return the file name as an absolute path."
+(defun linenote--create-note-path (&optional beg end)
+  "Create the file name for a note between BEG and END.
+BEG and END are line numbers.  If BEG is not provided, use the note at
+point, or, if there is no note at point, use the region if active, or
+the current line if the region is inactive.  Return the file name as an
+absolute path."
   (expand-file-name (concat (linenote--get-relpath)
-                            (linenote--create-linenum-string-at-point)
+                            (if beg
+                                (linenote--create-linenum-string beg end)
+                              (linenote--create-linenum-string-at-point))
                             "."
                             linenote-default-extension)
                     (linenote--get-note-root)))
