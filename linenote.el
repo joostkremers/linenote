@@ -243,7 +243,8 @@ If REMOVE is non-nil, remove any marks on the current line or region."
                                  nil (file-name-base note-relpath))))
     (save-mark-and-excursion
       (dolist (note notes)
-        (apply #'linenote--mark-note (linenote--extract-lines-from-filename note))))))
+        (let ((lines (linenote--extract-lines-from-filename note)))
+          (linenote--mark-note (car lines) (cdr lines)))))))
 
 (defun linenote--get-relpath ()
   "Get the relative path of the current file.
@@ -273,14 +274,14 @@ region, or just the current line if the region is inactive."
 
 (defun linenote--extract-lines-from-filename (filename)
   "Extract line range from FILENAME.
-Return value is a list of two numbers, the first and last line of
+Return value is a cons of two numbers, the first and last line of
 the note.  If the note only refers to a single line, the second value is
 nil."
   (when (string-match ".*#L\\([0-9]+\\)\\(?:-L\\([0-9]+\\).*\\)?" filename)
     (let ((beg (string-to-number (match-string 1 filename)))
           (end (and (match-beginning 2)
                     (string-to-number (match-string 2 filename)))))
-      (list beg end))))
+      (cons beg end))))
 
 (defun linenote--get-note-linum-by-direction (line forward)
   "Check if there is a note within the LINE.
@@ -291,8 +292,7 @@ the previous note."
                (t 0)))
         (found nil))
     (dolist (file (linenote--directory-files))
-      (let* ((range (linenote--extract-lines-from-filename file))
-             (min (car range))
+      (let* ((min (car (linenote--extract-lines-from-filename file)))
              (f (if forward #'< #'>)))
         (if (and (funcall f line min)
                  (funcall f min res))
@@ -381,7 +381,7 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
   (let* ((fs-id (nth 0 event))
          (etype (nth 1 event))
          (fpath (nth 2 event))
-         (region (linenote--extract-lines-from-filename fpath))
+         (lines (linenote--extract-lines-from-filename fpath))
          (event-buffer (cdr (assoc fs-id linenote--buffers))))
 
     (when (and (string-match-p
@@ -392,9 +392,9 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
       (with-current-buffer event-buffer
         (cond
          ((string= etype "deleted")
-          (linenote--mark-note (car region) (cadr region) t))
+          (linenote--mark-note (car lines) (cdr lines) t))
          ((string= etype "created")
-          (apply #'linenote--mark-note region)))))))
+          (linenote--mark-note (car lines) (cdr lines))))))))
 
 (defun linenote--dealloc-fswatch ()
   "Remove out the file watchers and corresponding list."
