@@ -289,47 +289,6 @@ nil."
                     (string-to-number (match-string 2 filename)))))
       (cons beg end))))
 
-(defun linenote--get-note-linum-by-direction (line forward)
-  "Check if there is a note within the LINE.
-If FORWARD is non-nil, then find the next note.  Otherwise, find
-the previous note."
-  (let ((res
-         (cond (forward (line-number-at-pos (point-max)))
-               (t 0)))
-        (found nil))
-    (dolist (file (linenote--directory-files))
-      (let* ((min (car (linenote--extract-lines-from-filename file)))
-             (f (if forward #'< #'>)))
-        (if (and (funcall f line min)
-                 (funcall f min res))
-            (progn
-              (setq found t)
-              (setq res min)))))
-    (if found res)))
-
-(defun linenote--move-forward (forward)
-  "Move to the next note.
-If FORWARD is nil, then move to the previous note."
-  (let* ((current-line (line-number-at-pos))
-         (next-line (linenote--get-note-linum-by-direction
-                     current-line
-                     forward))
-         (f (if forward #'> #'<)))
-    (if (and next-line
-             (funcall f next-line current-line))
-        (forward-line (- next-line current-line))
-      (message "No more notes"))))
-
-(defun linenote-move-forward ()
-  "Move to the next note."
-  (interactive)
-  (linenote--move-forward t))
-
-(defun linenote-move-backward ()
-  "Move to the previous note."
-  (interactive)
-  (linenote--move-forward nil))
-
 (defun linenote--get-note-at-point ()
   "Return the note overlay at point.
 If there is no note at point, return nil."
