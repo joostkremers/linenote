@@ -237,10 +237,10 @@ If REMOVE is non-nil, remove any marks on the current line or region."
 
 (defun linenote--mark-all-notes ()
   "Mark lines in the current buffer for which notes exist."
-  (let* ((note-relpath (linenote--get-relpath))
-         (notes (directory-files (expand-file-name (or (file-name-directory note-relpath) "")
+  (let* ((relpath (linenote--get-relpath))
+         (notes (directory-files (expand-file-name (or (file-name-directory relpath) "")
                                                    (linenote--get-note-root))
-                                 nil (file-name-base note-relpath))))
+                                 nil (file-name-base relpath))))
     (save-mark-and-excursion
       (dolist (note notes)
         (let ((lines (linenote--extract-lines-from-filename note)))
