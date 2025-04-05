@@ -255,7 +255,13 @@ part."
       (file-relative-name (buffer-file-name) root)
     (file-name-nondirectory (buffer-file-name))))
 
-(defun linenote--create-linenum-string ()
+(defun linenote--create-linenum-string (beg &optional end)
+  "Create a line number string from BEG to END."
+  (if end
+      (format "#L%S-L%S" beg end)
+    (format "#L%S" beg)))
+
+(defun linenote--create-linenum-string-at-point ()
   "Create a line number string for a note at point.
 Return value is a string of the form \"#L<n1>-L<n2>\" or, for a single
 line, \"#L<n>\".  If there is already a note at point, use its line
@@ -263,14 +269,11 @@ numbers.  Otherwise, use the start and end lines of the active
 region, or just the current line if the region is inactive."
   (if-let* ((ov (linenote--get-note-at-point))
             (lines (overlay-get ov 'linenote)))
-      (if (cdr lines)
-          (format "#L%S-L%S" (car lines) (cdr lines))
-        (format "#L%S" (car lines)))
+      (linenote--create-linenum-string (car lines) (cdr lines))
     (if (use-region-p)
-        (format "#L%S-L%S"
-                (line-number-at-pos (region-beginning))
-                (line-number-at-pos (1- (region-end))))
-      (format "#L%S" (line-number-at-pos)))))
+        (linenote--create-linenum-string (line-number-at-pos (region-beginning))
+                                         (line-number-at-pos (1- (region-end))))
+      (linenote--create-linenum-string (line-number-at-pos)))))
 
 (defun linenote--extract-lines-from-filename (filename)
   "Extract line range from FILENAME.
@@ -335,7 +338,7 @@ If there is no note at point, return nil."
   "Create the file path for a note at point.
 Return the file path as an absolute path."
   (expand-file-name (concat (linenote--get-relpath)
-                            (linenote--create-linenum-string)
+                            (linenote--create-linenum-string-at-point)
                             "."
                             linenote-default-extension)
                     (linenote--get-note-root)))
@@ -576,7 +579,7 @@ This removes both the fringe markers and the highlights."
       (when (null linenote--tags-hashmap)
         (setq-local linenote--tags-hashmap (make-hash-table :test 'equal)))
 
-      (let* ((tagkey (linenote--create-linenum-string))
+      (let* ((tagkey (linenote--create-linenum-string-at-point))
              (prev-val (gethash tagkey linenote--tags-hashmap))
              (tagstr (completing-read-multiple "Input tags (separated by , ): " prev-val)))
         (remhash tagkey linenote--tags-hashmap)
@@ -593,7 +596,7 @@ This removes both the fringe markers and the highlights."
                                   (linenote--get-note-root))))
 
     (linenote--load-tags reldir)
-    (let* ((tagkey (linenote--create-linenum-string))
+    (let* ((tagkey (linenote--create-linenum-string-at-point))
            (prev-val (gethash tagkey linenote--tags-hashmap)))
 
       (if (null prev-val)
