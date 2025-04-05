@@ -128,6 +128,9 @@ fringe marker, set this variable to nil."
 (defvar linenote--buffers nil
   "List of file watchers and associated buffers.")
 
+(defvar linenote--linenum-regexp ".*#L\\([0-9]+\\)\\(?:-L\\([0-9]+\\).*\\)?"
+  "Regular expression matching the line number part of a note filename.")
+
 (defun linenote-set-fringe-bitmap (var value)
   "Setter function for `linenote-fringe-bitmap'.
 VAR is the variable `linenote-fringe-bitmap', VALUE should be a list of
@@ -280,7 +283,7 @@ region, or just the current line if the region is inactive."
 Return value is a cons of two numbers, the first and last line of
 the note.  If the note only refers to a single line, the second value is
 nil."
-  (when (string-match ".*#L\\([0-9]+\\)\\(?:-L\\([0-9]+\\).*\\)?" filename)
+  (when (string-match linenote--linenum-regexp filename)
     (let ((beg (string-to-number (match-string 1 filename)))
           (end (and (match-beginning 2)
                     (string-to-number (match-string 2 filename)))))
