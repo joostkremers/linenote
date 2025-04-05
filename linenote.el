@@ -335,8 +335,8 @@ If there is no note at point, return nil."
             (overlays-in (line-beginning-position) (line-end-position))))
 
 (defun linenote--create-note-path ()
-  "Create the file path for a note at point.
-Return the file path as an absolute path."
+  "Create the file name for a note at point.
+Return the file name as an absolute path."
   (expand-file-name (concat (linenote--get-relpath)
                             (linenote--create-linenum-string-at-point)
                             "."
