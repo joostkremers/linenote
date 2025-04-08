@@ -310,10 +310,18 @@ nil."
     (when (linenote--get-note-at-point)
       (goto-char (previous-single-char-property-change (point) 'linenote)))
     (let ((prev-note-pos (previous-single-char-property-change (point) 'linenote)))
-      (if (> prev-note-pos (point-min))
+      (if (or (> prev-note-pos (point-min))
+              (linenote--get-note-at (point-min)))
           (goto-char prev-note-pos)
         (goto-char start-pos)
         (user-error "No previous note")))))
+
+(defun linenote--get-note-at (pos)
+  "Return the note at POS.
+If there is no note at POS, return nil."
+  (seq-find (lambda (ov)
+              (overlay-get ov 'linenote))
+            (overlays-at pos)))
 
 (defun linenote--get-note-at-point (&optional line)
   "Return the note overlay at point.
