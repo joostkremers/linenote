@@ -635,7 +635,7 @@ This removes both the fringe markers and the highlights."
 
    [" ────Move────"
     ("n" "  Next note" linenote-next-note :transient t)
-    ("p" "  Previous note" linenote-next-note :transient t)]
+    ("p" "  Previous note" linenote-previous-note :transient t)]
 
    [" ────Browse────"
     ("Dn" " Dired notes directory for file" linenote-open-note-dir)
