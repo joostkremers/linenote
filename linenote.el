@@ -61,12 +61,12 @@
 ;;
 ;; - Consider the following pattern:
 ;;
-;;         (if-let* ((note (linenote--get-note-at-point :line))
+;;         (if-let* ((note (linenote--note-at-line))
 ;;                   (note-path (linenote--create-note-path)))
 ;;           ...)
 ;;
 ;;   This occurs a few times and is actually not very pretty, because
-;;   `linenote--create-note-path' calls `linenote--get-note-at-point'
+;;   `linenote--create-note-path' calls `linenote--note-at-line'
 ;;   itself.  I'm not sure there's an elegant way to fix this, though.
 
 ;;; Code:
@@ -270,7 +270,7 @@ Return value is a string of the form \"#L<n1>-L<n2>\" or, for a single
 line, \"#L<n>\".  If there is already a note at point, use its line
 numbers.  Otherwise, use the start and end lines of the active
 region, or just the current line if the region is inactive."
-  (if-let* ((ov (linenote--get-note-at-point :line))
+  (if-let* ((ov (linenote--note-at-line))
             (lines (overlay-get ov 'linenote)))
       (linenote--create-linenum-string (car lines) (cdr lines))
     (if (use-region-p)
@@ -294,7 +294,7 @@ nil."
   (interactive)
   ;; If we're in a note, move out of it first.
   (let ((start-pos (point)))
-    (when (linenote--get-note-at-point)
+    (when (linenote--note-at-pos)
       (goto-char (next-single-char-property-change (point) 'linenote)))
     (let ((next-note-pos (next-single-char-property-change (point) 'linenote)))
       (if (< next-note-pos (point-max))
@@ -307,31 +307,30 @@ nil."
   (interactive)
   ;; If we're in a note, move out of it first.
   (let ((start-pos (point)))
-    (when (linenote--get-note-at-point)
+    (when (linenote--note-at-pos)
       (goto-char (previous-single-char-property-change (point) 'linenote)))
     (let ((prev-note-pos (previous-single-char-property-change (point) 'linenote)))
       (if (or (> prev-note-pos (point-min))
-              (linenote--get-note-at (point-min)))
+              (linenote--note-at-pos (point-min)))
           (goto-char prev-note-pos)
         (goto-char start-pos)
         (user-error "No previous note")))))
 
-(defun linenote--get-note-at (pos)
+(defun linenote--note-at-pos (&optional pos)
   "Return the note at POS.
-If there is no note at POS, return nil."
+POS defaults to point.  If there is no note at POS, return nil."
+  (or pos
+      (setq pos (point)))
   (seq-find (lambda (ov)
               (overlay-get ov 'linenote))
             (overlays-at pos)))
 
-(defun linenote--get-note-at-point (&optional line)
-  "Return the note overlay at point.
-If LINE is non-nil, return the overlay at the current line, even if
-point is outside of it.  If there is no note at point, return nil."
+(defun linenote--note-at-line ()
+  "Return the note overlay on the current line.
+If there is no note at point, return nil."
   (seq-find (lambda (ov)
               (overlay-get ov 'linenote))
-            (if line
-                (overlays-in (line-beginning-position) (line-end-position))
-              (overlays-at (point)))))
+            (overlays-in (line-beginning-position) (line-end-position))))
 
 (defun linenote--create-note-path (&optional beg end)
   "Create the file name for a note between BEG and END.
@@ -360,7 +359,7 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
 (defun linenote-remove-note ()
   "Remove the note at point."
   (interactive)
-  (if-let* ((note (linenote--get-note-at-point :line))
+  (if-let* ((note (linenote--note-at-line))
             (section (overlay-get note 'linenote))
             (note-path (linenote--create-note-path))
             (buf (find-file-noselect note-path))
@@ -436,7 +435,7 @@ This removes both the fringe markers and the highlights."
   (interactive "NRelocate note to line number: ")
   (when (> new-start-line (count-lines 1 (1+ (buffer-size))))
     (user-error "Line %d does not exist" new-start-line))
-  (when-let* ((note (linenote--get-note-at-point :line))
+  (when-let* ((note (linenote--note-at-line))
               (old-lines (overlay-get note 'linenote))
               (old-start-line (car old-lines)))
     (when (= old-start-line new-start-line)
@@ -555,7 +554,7 @@ This removes both the fringe markers and the highlights."
 
 (defun linenote--eldoc-show-buffer (&optional _args)
   "Linenote documentation function for Eldoc."
-  (if-let* ((note (linenote--get-note-at-point :line))
+  (if-let* ((note (linenote--note-at-line))
             (note-path (linenote--create-note-path)))
       (when (file-exists-p note-path)
         (with-temp-buffer
@@ -594,7 +593,7 @@ This removes both the fringe markers and the highlights."
   "Add tags corresponding to the current line."
   (interactive)
 
-  (if (null (linenote--get-note-at-point :line))
+  (if (null (linenote--note-at-line))
       (message "Note does not exist on the current line.")
     (let ((reldir (expand-file-name
                    (concat (file-name-directory (linenote--get-relpath)) "")
