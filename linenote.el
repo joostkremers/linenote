@@ -529,13 +529,11 @@ accurate and if not, adjust the lines and the associated filename."
 
     ;; Set up Eldoc.
     (when linenote-use-eldoc
-      (setq-local eldoc-documentation-functions
-                  (cons 'linenote--eldoc-show-buffer eldoc-documentation-functions)))))
+      (add-hook 'eldoc-documentation-functions #'linenote--eldoc-show-buffer :local))))
 
 (defun linenote--disable ()
   "Disable `linenote-mode' in the current buffer."
-  (setq-local eldoc-documentation-functions
-              (delete 'linenote--eldoc-show-buffer eldoc-documentation-functions))
+  (remove-hook 'eldoc-documentation-functions #'linenote--eldoc-show-buffer :local)
 
   (remove-hook 'kill-buffer-hook #'linenote--buffer-killed :local)
   (remove-hook 'before-revert-hook #'linenote--remove-all-marks :local)
