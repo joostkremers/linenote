@@ -221,7 +221,15 @@ If REMOVE is non-nil, remove any marks on the current line or region."
               start-line (line-number-at-pos)
               end-pos (line-end-position)
               end-line nil))) ; nil here indicates the note only covers one line.
+
+    ;; If a note is put on an empty line, include the newline, because
+    ;; `{previous|next}-single-char-property-change' skip empty overlays.
+    (when (= start-pos end-pos)
+      (setq end-pos (1+ end-pos)))
+
+    ;; Remove any existing note overlays at point.
     (linenote--remove-overlays-at start-pos)
+
     ;; We record the start and end lines of the marked text in the overlay,
     ;; in order to be able to retrieve the note file. For this reason, they
     ;; are not updated when the position of the annotated text
