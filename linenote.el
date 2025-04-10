@@ -455,6 +455,27 @@ This removes both the fringe markers and the highlights."
       (linenote--mark-note new-start-line new-end-line)
       (rename-file old-note-path new-note-path))))
 
+(defun linenote--adjust-note-lines (note)
+  "Adjust the filename for NOTE.
+NOTE is a note overlay.  Check if the lines recorded in NOTE are still
+accurate and if not, adjust the lines and the associated filename."
+  (let* ((recorded-lines (overlay-get note 'linenote))
+         (actual-start (line-number-at-pos (overlay-start note)))
+         (actual-end (line-number-at-pos (overlay-end note))))
+    (when (= actual-start actual-end)
+      (setq actual-end nil))
+    (when (not (equal recorded-lines (cons actual-start actual-end)))
+      (let ((old-note-path (linenote--create-note-path (car recorded-lines) (cdr recorded-lines)))
+            (new-note-path (linenote--create-note-path actual-start actual-end)))
+        (overlay-put note 'linenote (cons actual-start actual-end))
+        (rename-file old-note-path new-note-path)))))
+
+(defun linenote--adjust-all-notes ()
+  "Adjust the line numbers and file names of all note."
+  (dolist (ov (overlays-in (point-min) (point-max)))
+    (if (overlay-get ov 'linenote)
+        (linenote--adjust-note-lines ov))))
+
 ;; To silence the byte-compiler when we assign this variable directly
 ;; below.
 (defvar linenote-mode)
