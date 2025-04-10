@@ -561,7 +561,7 @@ This removes both the fringe markers and the highlights."
 
 (defun linenote--eldoc-show-buffer (&optional _args)
   "Linenote documentation function for Eldoc."
-  (if-let* ((note (linenote--note-at-line))
+  (if-let* ((_ (linenote--note-at-line))
             (note-path (linenote--create-note-path)))
       (when (file-exists-p note-path)
         (with-temp-buffer
