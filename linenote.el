@@ -307,8 +307,12 @@ nil."
   (interactive)
   ;; If we're in a note, move out of it first.
   (let ((start-pos (point)))
-    (when (linenote--note-at-pos)
-      (goto-char (previous-single-char-property-change (point) 'linenote)))
+    ;; We use `linenote--note-at-line' here (unlike `linenote-next-note'),
+    ;; because if point is at the end of a line, `linenote--note-at-pos'
+    ;; returns nil, but we still need to detect a note on the current line
+    ;; and move to a point before it.
+    (when-let ((note (linenote--note-at-line)))
+      (goto-char (overlay-start note)))
     (let ((prev-note-pos (previous-single-char-property-change (point) 'linenote)))
       (if (or (> prev-note-pos (point-min))
               (linenote--note-at-pos (point-min)))
