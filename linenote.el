@@ -508,6 +508,7 @@ accurate and if not, adjust the lines and the associated filename."
     ;; Set up some hooks.
     (add-hook 'kill-buffer-hook #'linenote--buffer-killed :local)
     (add-hook 'before-revert-hook #'linenote--remove-all-marks :local)
+    (add-hook 'after-save-hook #'linenote--adjust-all-notes :local)
 
     ;; Set up a file watcher for the note directory.
     (let* ((buffer-id (current-buffer))
@@ -537,6 +538,7 @@ accurate and if not, adjust the lines and the associated filename."
 
   (remove-hook 'kill-buffer-hook #'linenote--buffer-killed :local)
   (remove-hook 'before-revert-hook #'linenote--remove-all-marks :local)
+  (remove-hook 'after-save-hook #'linenote--adjust-all-notes :local)
 
   (linenote--remove-all-marks)
   (linenote--dealloc-fswatch))
