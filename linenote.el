@@ -289,6 +289,9 @@ nil."
                     (string-to-number (match-string 2 filename)))))
       (cons beg end))))
 
+;; TODO `{next|previous}-single-char-property-change' ignore empty
+;; overlays, so putting a note on an empty line is a bad idea.
+
 (defun linenote-next-note ()
   "Move to the next note in the buffer."
   (interactive)
