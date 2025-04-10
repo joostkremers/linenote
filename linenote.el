@@ -42,7 +42,7 @@
 
 ;; - linenote-move-forward
 ;; - linenote-move-backward
-;; - linenote-open/create-note
+;; - linenote-create/open-note
 ;; - linenote-remove-note
 ;; - linenote-open-root-dir
 ;; - linenote-open-note-dir
@@ -353,7 +353,7 @@ absolute path."
                             linenote-default-extension)
                     (linenote--get-note-root)))
 
-(defun linenote-open/create-note (&optional keep-focus)
+(defun linenote-create/open-note (&optional keep-focus)
   "Open a note for the current line, creating one if none exists.
 Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
   (interactive)
@@ -665,7 +665,7 @@ accurate and if not, adjust the lines and the associated filename."
                                       (format "%s Linenote mode" (if linenote-mode
                                                                      (propertize "*" 'face '(:weight bold))
                                                                    " "))))
-    ("o" "  Create/open note" linenote-open/create-note)
+    ("o" "  Create/open note" linenote-create/open-note)
     ("r" "  Relocate note" linenote-relocate-note)
     ("d" "  Delete note" linenote-remove-note)]
 
