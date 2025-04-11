@@ -222,11 +222,6 @@ If REMOVE is non-nil, remove any marks on the current line or region."
               end-pos (line-end-position)
               end-line nil))) ; nil here indicates the note only covers one line.
 
-    ;; If a note is put on an empty line, include the newline, because
-    ;; `{previous|next}-single-char-property-change' skip empty overlays.
-    (when (= start-pos end-pos)
-      (setq end-pos (1+ end-pos)))
-
     ;; Remove any existing note overlays at point.
     (linenote--remove-overlays-at start-pos)
 
@@ -236,6 +231,11 @@ If REMOVE is non-nil, remove any marks on the current line or region."
     ;; changes. Note that if `end-line' is nil, the note only covers one
     ;; line.
     (unless remove
+      ;; If a note is put on an empty line, issue a warning, because
+      ;; `{previous|next}-single-char-property-change' skip empty overlays.
+      (when (= start-pos end-pos)
+        (display-warning 'linenote (format "Note at empty line %d" start-line) :warning))
+
       (let ((ov (make-overlay start-pos end-pos)))
         (overlay-put ov 'linenote (cons start-line end-line))
         (when linenote-use-fringe
