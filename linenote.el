@@ -37,7 +37,7 @@
 ;; source code files.  The notes are stored in separate files and are
 ;; displayed when point is on a line to which a note is attached.
 
-;; To activate the mode in a buffer, use `M-X linenote-mode`.  Then, the
+;; To activate the mode in a buffer, use `M-x linenote-mode`.  Then, the
 ;; following commands are available, which can be freely bound to keys:
 
 ;; - linenote-move-forward
