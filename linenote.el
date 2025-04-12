@@ -563,19 +563,22 @@ accurate and if not, adjust the lines and the associated filename."
   (linenote--remove-all-marks)
   (linenote--dealloc-fswatch))
 
-(define-minor-mode linenote-edit-mode
-  "Minor mode for editing linenote notes.
-This provides commands for storing and cancelling the note.")
-
 (defvar linenote-edit-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map "C-c c" #'linenote-finish-note)
-    (define-key map "C-c k" #'linenote-cancel-note)
-    map))
+    (define-key map (kbd "C-c c") #'linenote-finish-note)
+    (define-key map (kbd "C-c k") #'linenote-cancel-note)
+    map)
+  "Keymap for linenote-edit-mode.")
+
+(define-minor-mode linenote-edit-mode
+  "Minor mode for editing linenote notes.
+This provides commands for storing and cancelling the note."
+  :init-value nil :lighter nil :global nil)
 
 (defun linenote-finish-note ()
   "Finish the current note.
 Save the note if not saved, kill the buffer and delete the window."
+  (interactive)
   (when (buffer-modified-p)
     (save-buffer))
   (kill-buffer)
@@ -586,13 +589,14 @@ Save the note if not saved, kill the buffer and delete the window."
   "Cancel the current note.
 Kill the buffer, delete the window, remove the associated file and the
 note's overlay in the source buffer."
-  (let ((buffer (current-buffer))
-        (filename (buffer-file-name)))
+  (interactive)
+  (let* ((buffer (current-buffer))
+         (filename (buffer-file-name)))
+    (delete-overlay linenote-source-overlay)
     (set-buffer-modified-p nil)
     (delete-window)
     (kill-buffer buffer)
-    (delete-file filename)
-    (delete-overlay linenote-source-overlay))
+    (delete-file filename))
   (message "Note cancelled"))
 
 (defun linenote-open-root-dir ()
