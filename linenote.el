@@ -677,13 +677,13 @@ accurate and if not, adjust the lines and the associated filename."
                                       (format "%s Linenote mode" (if linenote-mode
                                                                      (propertize "*" 'face '(:weight bold))
                                                                    " "))))
-    ("o" "  Create/open note" linenote-create/open-note)
+    ("n" "  Create/open note" linenote-create/open-note)
     ("r" "  Relocate note" linenote-relocate-note)
     ("d" "  Delete note" linenote-remove-note)]
 
    [" ────Move────"
-    ("n" "  Next note" linenote-next-note :transient t)
-    ("p" "  Previous note" linenote-previous-note :transient t)]
+    ("f" "  Next note" linenote-next-note :transient t)
+    ("b" "  Previous note" linenote-previous-note :transient t)]
 
    [" ────Browse────"
     ("Dn" " Dired notes directory for file" linenote-open-note-dir)
