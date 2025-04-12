@@ -40,8 +40,8 @@
 ;; To activate the mode in a buffer, use `M-x linenote-mode`.  Then, the
 ;; following commands are available, which can be freely bound to keys:
 
-;; - linenote-move-forward
-;; - linenote-move-backward
+;; - linenote-next-note
+;; - linenote-previous-note
 ;; - linenote-create/open-note
 ;; - linenote-remove-note
 ;; - linenote-open-root-dir
