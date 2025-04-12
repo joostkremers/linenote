@@ -499,6 +499,7 @@ accurate and if not, adjust the lines and the associated filename."
 ;; directly below.
 (defvar linenote-mode)
 
+;;;###autoload
 (define-minor-mode linenote-mode
   "Toggle `linenote-mode'."
   :init-value nil
