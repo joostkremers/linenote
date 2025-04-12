@@ -495,8 +495,8 @@ accurate and if not, adjust the lines and the associated filename."
     (if (overlay-get ov 'linenote)
         (linenote--adjust-note-lines ov))))
 
-;; To silence the byte-compiler when we assign this variable directly
-;; below.
+;; To silence the byte-compiler when we assign a value to this variable
+;; directly below.
 (defvar linenote-mode)
 
 (define-minor-mode linenote-mode
