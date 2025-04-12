@@ -172,6 +172,9 @@ represents the background color of the fringe, or, if customized, of
 (defvar-local linenote--tags-hashmap nil
   "A hash table for tags.")
 
+(defvar-local linenote-source-overlay nil
+  "Overlay for the note being edited.")
+
 (defun linenote--project-root ()
   "Return the current project's root.
 If called outside of a project, return nil."
@@ -197,9 +200,10 @@ relevant lines, depending on the user settings `linenote-use-fringe' and
 BEG and END are the start and end lines of the buffer section to be
 marked.  If not provided, START-LINE and END-LINE default to the start
 and end lines of the region if it is active, or to the line point is on
-if the region is inactive.
+if the region is inactive.  Return the overlay created.
 
-If REMOVE is non-nil, remove any marks on the current line or region."
+If REMOVE is non-nil, remove any marks on the current line or region and
+return nil."
   ;; This is a little annoying: we need both the start and end lines, and
   ;; the start and end character positions.
   (let (start-pos end-pos)
@@ -244,7 +248,8 @@ If REMOVE is non-nil, remove any marks on the current line or region."
                                                       'linenote--fringe-bitmap
                                                       'linenote-fringe-face))))
         (when linenote-use-highlight
-          (overlay-put ov 'face 'linenote-highlight-face))))))
+          (overlay-put ov 'face 'linenote-highlight-face))
+        ov))))
 
 (defun linenote--mark-all-notes ()
   "Mark lines in the current buffer for which notes exist."
@@ -369,11 +374,13 @@ absolute path."
   "Open a note for the current line, creating one if none exists.
 Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
   (interactive)
-  (let ((buffer (find-file-noselect (linenote--create-note-path))))
-    (linenote--mark-note)
+  (let ((buffer (find-file-noselect (linenote--create-note-path)))
+        (note (linenote--mark-note)))
     (if keep-focus
         (display-buffer buffer 'reusable-frames)
-      (pop-to-buffer buffer 'reusable-frames))))
+      (pop-to-buffer buffer 'reusable-frames)
+      (linenote-edit-mode)
+      (setq-local linenote-source-overlay note))))
 
 (defun linenote-remove-note ()
   "Remove the note at point."
@@ -554,6 +561,38 @@ accurate and if not, adjust the lines and the associated filename."
 
   (linenote--remove-all-marks)
   (linenote--dealloc-fswatch))
+
+(define-minor-mode linenote-edit-mode
+  "Minor mode for editing linenote notes.
+This provides commands for storing and cancelling the note.")
+
+(defvar linenote-edit-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map "C-c c" #'linenote-finish-note)
+    (define-key map "C-c k" #'linenote-cancel-note)
+    map))
+
+(defun linenote-finish-note ()
+  "Finish the current note.
+Save the note if not saved, kill the buffer and delete the window."
+  (when (buffer-modified-p)
+    (save-buffer))
+  (kill-buffer)
+  (delete-window)
+  (message "Note saved"))
+
+(defun linenote-cancel-note ()
+  "Cancel the current note.
+Kill the buffer, delete the window, remove the associated file and the
+note's overlay in the source buffer."
+  (let ((buffer (current-buffer))
+        (filename (buffer-file-name)))
+    (set-buffer-modified-p nil)
+    (delete-window)
+    (kill-buffer buffer)
+    (delete-file filename)
+    (delete-overlay linenote-source-overlay))
+  (message "Note cancelled"))
 
 (defun linenote-open-root-dir ()
   "Open the linenote root directory for the current project."
