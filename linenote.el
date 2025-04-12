@@ -303,33 +303,37 @@ nil."
 (defun linenote-next-note ()
   "Move to the next note in the buffer."
   (interactive)
-  ;; If we're in a note, move out of it first.
-  (let ((start-pos (point)))
-    (when (linenote--note-at-pos)
-      (goto-char (next-single-char-property-change (point) 'linenote)))
-    (let ((next-note-pos (next-single-char-property-change (point) 'linenote)))
-      (if (< next-note-pos (point-max))
-          (goto-char next-note-pos)
-        (goto-char start-pos)
-        (user-error "No next note")))))
+  (let (next-note)
+    (save-excursion
+      ;; If we're in a note, move out of it first.
+      (when (linenote--note-at-pos)
+        (goto-char (next-single-char-property-change (point) 'linenote)))
+      (let ((next-note-pos (next-single-char-property-change (point) 'linenote)))
+        (when (< next-note-pos (point-max))
+          (setq next-note (linenote--note-at-pos next-note-pos)))))
+    (if next-note
+        (goto-char (overlay-start next-note))
+      (user-error "No next note"))))
 
 (defun linenote-previous-note ()
   "Move to the previous note in the buffer."
   (interactive)
-  ;; If we're in a note, move out of it first.
-  (let ((start-pos (point)))
-    ;; We use `linenote--note-at-line' here (unlike `linenote-next-note'),
-    ;; because if point is at the end of a line, `linenote--note-at-pos'
-    ;; returns nil, but we still need to detect a note on the current line
-    ;; and move to a point before it.
-    (when-let ((note (linenote--note-at-line)))
-      (goto-char (overlay-start note)))
-    (let ((prev-note-pos (previous-single-char-property-change (point) 'linenote)))
-      (if (or (> prev-note-pos (point-min))
-              (linenote--note-at-pos (point-min)))
-          (goto-char prev-note-pos)
-        (goto-char start-pos)
-        (user-error "No previous note")))))
+  (let (prev-note)
+    (save-excursion
+      ;; If we're in a note, move out of it first.  We use
+      ;; `linenote--note-at-line' here (unlike `linenote-next-note'),
+      ;; because if point is at the end of a line, `linenote--note-at-pos'
+      ;; returns nil, but we still need to detect a note on the current
+      ;; line.
+      (when-let* ((note (linenote--note-at-line)))
+        (goto-char (overlay-start note)))
+      (let ((prev-note-pos (previous-single-char-property-change (point) 'linenote)))
+        (when (or (> prev-note-pos (point-min))
+                  (linenote--note-at-pos (point-min)))
+          (setq prev-note (linenote--note-at-pos (1- prev-note-pos))))))
+    (if prev-note
+        (goto-char (overlay-start prev-note))
+      (user-error "No previous note"))))
 
 (defun linenote--note-at-pos (&optional pos)
   "Return the note at POS.
