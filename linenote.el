@@ -74,6 +74,7 @@
 (require 'subr-x)
 (require 'filenotify)
 (require 'eldoc)
+(require 'crm)
 (require 'project)
 (require 'transient)
 
@@ -654,45 +655,29 @@ This overwrites the existing tags file unconditionally."
       (insert hash-str))))
 
 (defun linenote-add-tags ()
-  "Add tags corresponding to the current line."
+  "Add tags to the note on the current line."
   (interactive)
-
-  (if (null (linenote--note-at-line))
-      (message "Note does not exist on the current line.")
-    (let ((reldir (expand-file-name
-                   (concat (file-name-directory (linenote--get-relpath)) "")
-                   (linenote--get-note-root))))
-      (linenote--load-tags reldir)
-      (when (null linenote--tags-hashmap)
-        (setq-local linenote--tags-hashmap (make-hash-table :test 'equal)))
-
-      (let* ((tagkey (linenote--create-linenum-string-at-point))
-             (prev-val (gethash tagkey linenote--tags-hashmap))
-             (tagstr (completing-read-multiple "Input tags (separated by , ): " prev-val)))
-        (remhash tagkey linenote--tags-hashmap)
-        (if prev-val
-            (puthash tagkey (append tagstr prev-val) linenote--tags-hashmap)
-          (puthash tagkey tagstr linenote--tags-hashmap))
-        (linenote--save-tags reldir)))))
+  (unless (linenote--note-at-line)
+    (user-error "No note on the current line"))
+  (unless linenote--tags-hashmap
+    (setq-local linenote--tags-hashmap (make-hash-table :test 'equal)))
+  (let* ((tag-key (linenote--create-linenum-string-at-point))
+         (prev-val (gethash tag-key linenote--tags-hashmap))
+         (crm-separator "[ \t]*,[ \t]*")
+         (tags (completing-read-multiple "Add tags (separated by , ): " prev-val)))
+    (puthash tag-key (seq-uniq (append tags prev-val)) linenote--tags-hashmap)))
 
 (defun linenote-remove-tags ()
-  "Remove tags corresponding to the current line."
+  "Remove tags from the note on the current line."
   (interactive)
-
-  (let ((reldir (expand-file-name (concat (file-name-directory (linenote--get-relpath)) "")
-                                  (linenote--get-note-root))))
-
-    (linenote--load-tags reldir)
-    (let* ((tagkey (linenote--create-linenum-string-at-point))
-           (prev-val (gethash tagkey linenote--tags-hashmap)))
-
-      (if (null prev-val)
-          (message "No tags to remove on the current line.")
-        (let* ((tagstr (completing-read-multiple "Input tags to remove (separated by , ): " prev-val)))
-          (mapc (lambda (v) (setq prev-val (delete v prev-val))) tagstr)
-          (remhash tagkey linenote--tags-hashmap)
-          (puthash tagkey prev-val linenote--tags-hashmap)
-          (linenote--save-tags reldir))))))
+  (unless (linenote--note-at-line)
+    (user-error "No note on the current line"))
+  (if-let* ((tag-key (linenote--create-linenum-string-at-point))
+            (prev-val (gethash tag-key linenote--tags-hashmap))
+            (crm-separator "[ \t]*,[ \t]*")
+            (tags (completing-read-multiple "Tags to remove (separated by , ): " prev-val nil t)))
+      (puthash tag-key (seq-difference prev-val tags) linenote--tags-hashmap)
+    (user-error "No tags to remove on the current line")))
 
 (transient-define-prefix linenote-transient ()
   ["Linenote\n"
