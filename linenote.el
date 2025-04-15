@@ -679,6 +679,14 @@ This overwrites the existing tags file unconditionally."
       (puthash tag-key (seq-difference prev-val tags) linenote--tags-hashmap)
     (user-error "No tags to remove on the current line")))
 
+(defun linenote--update-tags-key (old-key new-key)
+  "Update the key for the tags for OLD-KEY to NEW-KEY.
+Return the value associated with the key if successful.  If there is no
+entry for OLD-KEY, do nothing and return nil."
+  (when-let* ((tags (gethash linenote--tags-hashmap old-key)))
+    (remhash old-key linenote--tags-hashmap)
+    (puthash new-key tags linenote--tags-hashmap)))
+
 (transient-define-prefix linenote-transient ()
   ["Linenote\n"
    [" ────Notes────"
