@@ -479,7 +479,8 @@ This removes both the fringe markers and the highlights."
 (defun linenote--adjust-note-lines (note)
   "Adjust the filename for NOTE.
 NOTE is a note overlay.  Check if the lines recorded in NOTE are still
-accurate and if not, adjust the lines and the associated filename."
+accurate and if not, adjust the lines and the associated filename and
+the tags, if any.."
   (let* ((recorded-lines (overlay-get note 'linenote))
          (actual-start (line-number-at-pos (overlay-start note)))
          (actual-end (line-number-at-pos (overlay-end note))))
@@ -489,7 +490,9 @@ accurate and if not, adjust the lines and the associated filename."
       (let ((old-note-path (linenote--create-note-path (car recorded-lines) (cdr recorded-lines)))
             (new-note-path (linenote--create-note-path actual-start actual-end)))
         (overlay-put note 'linenote (cons actual-start actual-end))
-        (rename-file old-note-path new-note-path)))))
+        (rename-file old-note-path new-note-path)
+        (linenote--update-tags-key (linenote--create-linenum-string (car recorded-lines) (cdr recorded-lines))
+                                   (linenote--create-linenum-string actual-start actual-end))))))
 
 (defun linenote--adjust-all-notes ()
   "Adjust the line numbers and file names of all notes."
