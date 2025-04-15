@@ -489,7 +489,7 @@ accurate and if not, adjust the lines and the associated filename."
         (rename-file old-note-path new-note-path)))))
 
 (defun linenote--adjust-all-notes ()
-  "Adjust the line numbers and file names of all note."
+  "Adjust the line numbers and file names of all notes."
   (dolist (ov (overlays-in (point-min) (point-max)))
     (if (overlay-get ov 'linenote)
         (linenote--adjust-note-lines ov))))
