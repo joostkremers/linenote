@@ -635,12 +635,12 @@ note's overlay in the source buffer."
               (error (message "handle error: %s" e))))))))
 
 (defun linenote--load-tags (directory)
-  "Load tags saved in the note DIRECTORY."
+  "Load tags saved in the note DIRECTORY.
+This overwrites the existing tags database unconditionally."
   (setq-local linenote--tags-hashmap
               (let ((tag-file
                      (expand-file-name linenote--tags-file directory)))
                 (when (file-exists-p tag-file)
-                  ;; load the file
                   (with-temp-buffer
                     (insert-file-contents tag-file)
                     (read (current-buffer)))))))
