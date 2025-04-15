@@ -615,26 +615,6 @@ note's overlay in the source buffer."
         (find-file note-dir)
       (error "No notes found"))))
 
-(defun linenote--obtain-tag-string-by-key (key)
-  "Get a tag string by the KEY from the hash table."
-  (let ((result ""))
-    (mapc (lambda (v)
-            (setq result (concat result (format "#%s " v))))
-          (gethash (format "#L%S" (car key)) linenote--tags-hashmap))
-    result))
-
-(defun linenote--add-tags-to-notelist (notes)
-  "Add tags to the list of NOTES for the current buffer."
-  (mapcar (lambda (note)
-            (when linenote-use-relative
-              (setq note (string-replace (expand-file-name linenote-notes-directory
-                                                           (linenote--project-root))
-                                         "" note)))
-            (format "%-100s%s" note
-                    (linenote--obtain-tag-string-by-key
-                     (linenote--extract-lines-from-filename note))))
-          notes))
-
 (defun linenote--eldoc-show-buffer (&optional _args)
   "Linenote documentation function for Eldoc."
   (if-let* ((_ (linenote--note-at-line))
