@@ -472,7 +472,9 @@ This removes both the fringe markers and the highlights."
            (new-note-path (linenote--create-note-path new-start-line new-end-line)))
       (linenote--mark-note (car old-lines) (cdr old-lines) :remove)
       (linenote--mark-note new-start-line new-end-line)
-      (rename-file old-note-path new-note-path))))
+      (rename-file old-note-path new-note-path)
+      (linenote--update-tags-key (linenote--create-linenum-string (car old-lines) (cdr old-lines))
+                                 (linenote--create-linenum-string new-start-line new-end-line)))))
 
 (defun linenote--adjust-note-lines (note)
   "Adjust the filename for NOTE.
