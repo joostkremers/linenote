@@ -649,7 +649,7 @@ This overwrites the existing tags database unconditionally."
   "Save tags to the note DIRECTORY.
 This overwrites the existing tags file unconditionally."
   (let ((tag-file (expand-file-name linenote--tags-file directory))
-        (hash-str (prin1-to-string linenote--tags-hashmap)))
+        (hash-str (prin1-to-string linenote--tags-hashmap nil t)))
     (with-temp-file tag-file
       (insert hash-str))))
 
