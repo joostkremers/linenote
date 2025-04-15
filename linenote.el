@@ -523,29 +523,30 @@ the tags, if any.."
     (setq linenote-mode nil)
     (error "Not file-visiting buffer"))
 
-  ;; Make sure the note directory exists.
-  (let ((note-dir (expand-file-name
-                   (or (file-name-directory (linenote--get-relpath)) "")
-                   (linenote--get-note-root))))
+  ;; Make sure the note directory exists and set up a file watcher.
+  (let* ((note-dir (expand-file-name
+                    (or (file-name-directory (linenote--get-relpath)) "")
+                    (linenote--get-note-root)))
+         (watch-id (file-notify-add-watch note-dir
+                                          '(change)
+                                          #'linenote--file-changed))
+         (buffer-id (current-buffer)))
     (make-directory note-dir t)
+
+    ;; TODO `file-notify-add-watch' triggers an error if the file
+    ;; cannot be watched. We should probably handle this.
+
+    ;; TODO This sets up multiple file watchers for the same node
+    ;; directory if we annotate more than one file in the same
+    ;; source directory. We should probably handle that better.
+
+    (setq-local linenote--fwatch-id watch-id)
+    (setq-local linenote--follow-cursor nil)
+    (push `(,watch-id . ,buffer-id) linenote--buffers)
 
     (add-hook 'kill-buffer-hook #'linenote--buffer-killed :local)
     (add-hook 'before-revert-hook #'linenote--remove-all-marks :local)
     (add-hook 'after-save-hook #'linenote--adjust-all-notes :local)
-
-    (let* ((buffer-id (current-buffer))
-           ;; TODO `file-notify-add-watch' triggers an error if the file
-           ;; cannot be watched. We should probably handle this.
-
-           ;; TODO This sets up multiple file watchers for the same node
-           ;; directory if we annotate more than one file in the same
-           ;; source directory. We should probably handle that better.
-           (watch-id (file-notify-add-watch note-dir
-                                            '(change)
-                                            #'linenote--file-changed)))
-      (setq-local linenote--fwatch-id watch-id)
-      (setq-local linenote--follow-cursor nil)
-      (push `(,watch-id . ,buffer-id) linenote--buffers))
 
     (linenote--mark-all-notes)
     (linenote--load-tags)
