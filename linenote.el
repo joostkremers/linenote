@@ -565,6 +565,7 @@ the tags, if any.."
   (remove-hook 'before-revert-hook #'linenote--remove-all-marks :local)
   (remove-hook 'after-save-hook #'linenote--adjust-all-notes :local)
 
+  (linenote--save-tags)
   (linenote--remove-all-marks)
   (linenote--dealloc-fswatch))
 
