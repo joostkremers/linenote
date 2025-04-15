@@ -548,7 +548,7 @@ the tags, if any.."
       (push `(,watch-id . ,buffer-id) linenote--buffers))
 
     (linenote--mark-all-notes)
-
+    (linenote--load-tags)
     (when linenote-use-eldoc
       (add-hook 'eldoc-documentation-functions #'linenote--eldoc-show-buffer :local))))
 
