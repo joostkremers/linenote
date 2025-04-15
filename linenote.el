@@ -516,7 +516,6 @@ the tags, if any.."
 
 (defun linenote--enable ()
   "Enable `linenote-mode' in the current buffer."
-  ;; First check if we're in a project and visiting a file.
   (when (not (linenote--project-root))
     (setq linenote-mode nil)
     (error "The working directory is not a known project"))
@@ -530,12 +529,10 @@ the tags, if any.."
                    (linenote--get-note-root))))
     (make-directory note-dir t)
 
-    ;; Set up some hooks.
     (add-hook 'kill-buffer-hook #'linenote--buffer-killed :local)
     (add-hook 'before-revert-hook #'linenote--remove-all-marks :local)
     (add-hook 'after-save-hook #'linenote--adjust-all-notes :local)
 
-    ;; Set up a file watcher for the note directory.
     (let* ((buffer-id (current-buffer))
            ;; TODO `file-notify-add-watch' triggers an error if the file
            ;; cannot be watched. We should probably handle this.
@@ -550,10 +547,8 @@ the tags, if any.."
       (setq-local linenote--follow-cursor nil)
       (push `(,watch-id . ,buffer-id) linenote--buffers))
 
-    ;; Mark all existing notes.
     (linenote--mark-all-notes)
 
-    ;; Set up Eldoc.
     (when linenote-use-eldoc
       (add-hook 'eldoc-documentation-functions #'linenote--eldoc-show-buffer :local))))
 
