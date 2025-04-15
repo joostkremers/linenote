@@ -450,7 +450,7 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
         (delete-overlay ov))))
 
 (defun linenote--remove-all-marks ()
-  "Remove all overlays in the current buffer.
+  "Remove all note overlays in the current buffer.
 This removes both the fringe markers and the highlights."
   (dolist (ov (overlays-in (point-min) (point-max)))
     (when (overlay-get ov 'linenote)
