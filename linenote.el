@@ -646,7 +646,8 @@ This overwrites the existing tags database unconditionally."
                     (read (current-buffer)))))))
 
 (defun linenote--save-tags (directory)
-  "Save tags to the note DIRECTORY."
+  "Save tags to the note DIRECTORY.
+This overwrites the existing tags file unconditionally."
   (let ((tag-file (expand-file-name linenote--tags-file directory))
         (hash-str (prin1-to-string linenote--tags-hashmap)))
     (with-temp-file tag-file
