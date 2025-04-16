@@ -711,7 +711,11 @@ entry for OLD-KEY, do nothing and return nil."
 
    [" ────Browse────"
     ("Dn" " Dired notes directory for file" linenote-open-note-dir)
-    ("Ds" " Dired notes root directory" linenote-open-root-dir)]])
+    ("Ds" " Dired notes root directory" linenote-open-root-dir)]
+
+   [" ────Tags────"
+    ("Ta" " Add tags" linenote-add-tags)
+    ("Td" " Delete tags" linenote-remove-tags)]])
 
 
 (provide 'linenote)
