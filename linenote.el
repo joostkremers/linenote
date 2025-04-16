@@ -622,22 +622,19 @@ note's overlay in the source buffer."
 
 (defun linenote--eldoc-show-buffer (&optional _args)
   "Linenote documentation function for Eldoc."
-  (if-let* ((_ (linenote--note-at-line))
-            (note-path (linenote--create-note-path)))
+  (when-let* ((_ (linenote--note-at-line))
+              (note-path (linenote--create-note-path))
+              (tag-key (linenote--create-linenum-string-at-point)))
+    (let ((tags (gethash tag-key linenote--tags-hashmap)))
       (when (file-exists-p note-path)
         (with-temp-buffer
           (insert-file-contents note-path)
-          (let* ((file-buffer (buffer-string))
-                 (file-ext (file-name-extension note-path))
-                 (language '(("org" . "org")
-                             ("md" . "markdown"))))
-            (condition-case e
-                (if (fboundp 'lsp--render-string)
-                    (lsp--render-string file-buffer (cdr (assoc file-ext language)))
-                  ;; TODO We should come up with a more portable way to
-                  ;; render the buffer.
-                  file-buffer)
-              (error (message "handle error: %s" e))))))))
+          (when tags
+            (goto-char (point-max))
+            (insert "\n")
+            (insert (propertize "\N{ZERO WIDTH SPACE}\n" 'face '(:underline t :extend t)))
+            (insert (format "Tags: %s" (string-join tags ", "))))
+          (buffer-string))))))
 
 (defun linenote--load-tags ()
   "Load tags for the current buffer.
