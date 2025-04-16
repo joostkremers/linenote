@@ -573,6 +573,7 @@ the tags, if any.."
     map)
   "Keymap for linenote-edit-mode.")
 
+;; This mode doesn't do anything, it's just there for the keymap.
 (define-minor-mode linenote-edit-mode
   "Minor mode for editing linenote notes.
 This provides commands for storing and cancelling the note."
