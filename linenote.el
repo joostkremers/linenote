@@ -672,7 +672,7 @@ This overwrites the existing tags file unconditionally."
          (prev-val (gethash tag-key linenote--tags-hashmap))
          (crm-separator "[ \t]*,[ \t]*")
          (tags (completing-read-multiple "Add tags (separated by , ): " prev-val)))
-    (puthash tag-key (seq-uniq (append tags prev-val)) linenote--tags-hashmap)))
+    (puthash tag-key (seq-uniq (append prev-val tags)) linenote--tags-hashmap)))
 
 (defun linenote-remove-tags ()
   "Remove tags from the note on the current line."
