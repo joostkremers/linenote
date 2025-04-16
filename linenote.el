@@ -632,6 +632,8 @@ note's overlay in the source buffer."
           (when tags
             (goto-char (point-max))
             (insert "\n")
+            ;; We need a zero-width space here, because a normal space is
+            ;; apparently removed before Eldoc renders the string.
             (insert (propertize "\N{ZERO WIDTH SPACE}\n" 'face '(:underline t :extend t)))
             (insert (format "Tags: %s" (string-join tags ", "))))
           (buffer-string))))))
