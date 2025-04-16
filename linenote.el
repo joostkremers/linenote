@@ -690,7 +690,7 @@ This overwrites the existing tags file unconditionally."
   "Update the key for the tags for OLD-KEY to NEW-KEY.
 Return the value associated with the key if successful.  If there is no
 entry for OLD-KEY, do nothing and return nil."
-  (when-let* ((tags (gethash linenote--tags-hashmap old-key)))
+  (when-let* ((tags (gethash old-key linenote--tags-hashmap)))
     (remhash old-key linenote--tags-hashmap)
     (puthash new-key tags linenote--tags-hashmap)))
 
