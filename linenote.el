@@ -437,7 +437,7 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
       (with-current-buffer event-buffer
         (cond
          ((string= etype "deleted")
-          (linenote--mark-note (car lines) (cdr lines) t))
+          (linenote--mark-note (car lines) (cdr lines) :remove))
          ((string= etype "created")
           (linenote--mark-note (car lines) (cdr lines))))))))
 
