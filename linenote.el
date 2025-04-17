@@ -228,8 +228,10 @@ return nil."
               end-pos (line-end-position)
               end-line nil))) ; nil here indicates the note only covers one line.
 
-    ;; Remove any existing note overlays at point.
-    (linenote--remove-overlays-at start-pos)
+    ;; Remove any existing note overlays.
+    (dolist (ov (overlays-in start-pos end-pos))
+      (if (overlay-get ov 'linenote)
+          (delete-overlay ov)))
 
     ;; We record the start and end lines of the marked text in the overlay,
     ;; in order to be able to retrieve the note file. For this reason, they
@@ -446,12 +448,6 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
 (defun linenote--buffer-killed ()
   "A hook function for `kill-buffer-hook'."
   (linenote--dealloc-fswatch))
-
-(defun linenote--remove-overlays-at (pos)
-  "Remove linenote overlays at character position POS."
-  (dolist (ov (overlays-in pos (1+ pos)))
-    (if (overlay-get ov 'linenote)
-        (delete-overlay ov))))
 
 (defun linenote--remove-all-marks ()
   "Remove all note overlays in the current buffer.
