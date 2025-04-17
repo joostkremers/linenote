@@ -549,14 +549,14 @@ the tags, if any.."
     (setq-local linenote--follow-cursor nil)
     (push `(,watch-id . ,buffer-id) linenote--buffers)
 
-    (add-hook 'kill-buffer-hook #'linenote--buffer-killed :local)
-    (add-hook 'before-revert-hook #'linenote--remove-all-marks :local)
-    (add-hook 'after-save-hook #'linenote--adjust-all-notes :local)
+    (add-hook 'kill-buffer-hook #'linenote--buffer-killed 0 :local)
+    (add-hook 'before-revert-hook #'linenote--remove-all-marks 0 :local)
+    (add-hook 'after-save-hook #'linenote--adjust-all-notes 0 :local)
 
     (linenote--mark-all-notes)
     (linenote--load-tags)
     (when linenote-use-eldoc
-      (add-hook 'eldoc-documentation-functions #'linenote--eldoc-show-buffer :local))))
+      (add-hook 'eldoc-documentation-functions #'linenote--eldoc-show-buffer 50 :local))))
 
 (defun linenote--disable ()
   "Disable `linenote-mode' in the current buffer."
