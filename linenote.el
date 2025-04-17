@@ -60,9 +60,6 @@
 ;;   they be excluded altogether, or should there be some fallback
 ;;   behaviour?
 ;;
-;; - What happens when the user wants to create a new note in a region that
-;;   already has a note attached to it?
-;;
 ;; - Consider the following pattern:
 ;;
 ;;         (if-let* ((note (linenote--note-at-line))
