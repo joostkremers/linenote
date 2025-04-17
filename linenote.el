@@ -394,6 +394,7 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
   (if-let* ((note (linenote--note-at-line))
             (section (overlay-get note 'linenote))
             (note-path (linenote--create-note-path))
+            (tags-key (linenote--create-linenum-string-at-point))
             (buf (find-file-noselect note-path))
             (win (display-buffer buf 'reusable-frames)))
       (condition-case err
@@ -403,6 +404,7 @@ Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
             (kill-buffer buf)
             (delete-file note-path)
             (linenote--mark-note (car section) (cdr section) :remove)
+            (remhash tags-key linenote--tags-hashmap)
             (delete-window win))
         (quit (delete-window win))
         (error (signal (car err) (cdr err))))
