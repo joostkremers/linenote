@@ -351,6 +351,12 @@ POS defaults to point.  If there is no note at POS, return nil."
               (overlay-get ov 'linenote))
             (overlays-at pos)))
 
+(defun linenote--note-in-region (beg end)
+  "Return non-nil if there is a note between BEG and END."
+  (seq-find (lambda (ov)
+              (overlay-get ov 'linenote))
+            (overlays-in beg end)))
+
 (defun linenote--note-at-line ()
   "Return the note overlay on the current line.
 If there is no note at point, return nil."
