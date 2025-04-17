@@ -199,13 +199,14 @@ Marking involves setting the fringe marker and/or highlighting the
 relevant lines, depending on the user settings `linenote-use-fringe' and
 `linenote-use-highlight'.
 
-BEG and END are the start and end lines of the buffer section to be
-marked.  If not provided, START-LINE and END-LINE default to the start
-and end lines of the region if it is active, or to the line point is on
-if the region is inactive.  Return the overlay created.
+START-LINE and END-LINE are the start and end lines of the buffer
+section to be marked.  If not provided, START-LINE and END-LINE default
+to the start and end lines of the region if it is active, or to the line
+point is on if the region is inactive.  Return the overlay created.
 
-If REMOVE is non-nil, remove any marks on the current line or region and
-return nil."
+Any existing note overlays between START-LINE and END-LINE are removed.
+If REMOVE is non-nil, just remove any overlays between START-LINE and
+END-LINE and return nil."
   ;; This is a little annoying: we need both the start and end lines, and
   ;; the start and end character positions.
   (let (start-pos end-pos)
