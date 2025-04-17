@@ -360,9 +360,7 @@ POS defaults to point.  If there is no note at POS, return nil."
 (defun linenote--note-at-line ()
   "Return the note overlay on the current line.
 If there is no note at point, return nil."
-  (seq-find (lambda (ov)
-              (overlay-get ov 'linenote))
-            (overlays-in (line-beginning-position) (line-end-position))))
+  (linenote--note-in-region (line-beginning-position) (line-end-position)))
 
 (defun linenote--create-note-path (&optional beg end)
   "Create the file name for a note between BEG and END.
