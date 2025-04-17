@@ -381,7 +381,8 @@ absolute path."
 Pop up a buffer and select it, unless KEEP-FOCUS is non-nil."
   (interactive)
   (let ((buffer (find-file-noselect (linenote--create-note-path)))
-        (note (linenote--mark-note)))
+        (note (or (linenote--note-at-line)
+                  (linenote--mark-note))))
     (if keep-focus
         (display-buffer buffer 'reusable-frames)
       (pop-to-buffer buffer 'reusable-frames)
