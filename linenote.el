@@ -40,12 +40,16 @@
 ;; To activate the mode in a buffer, use `M-x linenote-mode`.  Then, the
 ;; following commands are available, which can be freely bound to keys:
 
-;; - linenote-next-note
-;; - linenote-previous-note
-;; - linenote-create/open-note
-;; - linenote-remove-note
-;; - linenote-open-root-dir
-;; - linenote-open-note-dir
+;; - `linenote-next-note'
+;; - `linenote-previous-note'
+;; - `linenote-create/open-note'
+;; - `linenote-remove-note'
+;; - `linenote-open-root-dir'
+;; - `linenote-open-note-dir'
+;; - `linenote-add-tags'
+;; - `linenote-remove-tags'
+
+;; There is also a transient that can be bound to a key: `linenote-transient'.
 
 ;; Notes are stored in a subdirectory of the project directory, by default
 ;; named `.linenote`.
