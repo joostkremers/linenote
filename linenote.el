@@ -167,8 +167,6 @@ If called outside of a project, return nil."
   (if-let* ((project (project-current)))
       (expand-file-name (project-root project))))
 
-;; TODO Check if this function should really return the empty string if
-;; there is no project root.
 (defun linenote--get-note-root ()
   "Get the root directory for notes in the current project.
 If not in a project, return empty string.  This function uses
