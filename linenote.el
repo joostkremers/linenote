@@ -54,22 +54,6 @@
 ;; Notes are stored in a subdirectory of the project directory, by default
 ;; named `.linenote`.
 
-;; TODO
-;;
-;; - Properly deal with directories that are not part of a project: Should
-;;   they be excluded altogether, or should there be some fallback
-;;   behaviour?
-;;
-;; - Consider the following pattern:
-;;
-;;         (if-let* ((note (linenote--note-at-line))
-;;                   (note-path (linenote--create-note-path)))
-;;           ...)
-;;
-;;   This occurs a few times and is actually not very pretty, because
-;;   `linenote--create-note-path' calls `linenote--note-at-line'
-;;   itself.  I'm not sure there's an elegant way to fix this, though.
-
 ;;; Code:
 
 (require 'subr-x)
