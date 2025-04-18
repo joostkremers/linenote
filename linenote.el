@@ -180,7 +180,7 @@ represents the background color of the fringe, or, if customized, of
 (defun linenote--project-root ()
   "Return the current project's root.
 If called outside of a project, return nil."
-  (if-let ((project (project-current)))
+  (if-let* ((project (project-current)))
       (expand-file-name (project-root project))))
 
 ;; TODO Check if this function should really return the empty string if
@@ -189,7 +189,7 @@ If called outside of a project, return nil."
   "Get the root directory for notes in the current project.
 If not in a project, return empty string.  This function uses
 `project.el' under the hood."
-  (if-let ((project-root (linenote--project-root)))
+  (if-let* ((project-root (linenote--project-root)))
       (expand-file-name linenote-notes-directory project-root)
     ""))
 
